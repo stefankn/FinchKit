@@ -31,7 +31,9 @@ public final class Player {
 
     public private(set) var status: AVPlayer.TimeControlStatus = .waitingToPlayAtSpecifiedRate
     public private(set) var artworkURL: URL?
+    
     public private(set) var currentPlaybackPosition: Duration?
+    
     public private(set) var queue: Queue? {
         didSet {
             UserDefaults.standard.set(queue, for: .queue)
@@ -82,11 +84,13 @@ public final class Player {
         Task {
             for await duration in player.periodicTimes {
                 self.currentPlaybackPosition = duration
+                
+                await storePlaybackPosition()
             }
         }
         
         if let queue = UserDefaults.standard.object(Queue.self, for: .queue) {
-            loadQueue(queue)
+            loadQueue(queue, restorePlaybackPosition: true)
         }
     }
     
@@ -139,13 +143,15 @@ public final class Player {
         seek(to: .zero)
     }
     
-    public func seek(to duration: Duration, completion: ((Bool) -> Void)? = nil) {
+    public func seek(to duration: Duration, completion: (@Sendable (Bool) -> Void)? = nil) {
         player.seek(to: duration) { isCompleted in
             completion?(isCompleted)
+            
+            Task { await self.storePlaybackPosition(isExact: true) }
         }
     }
     
-    public func seek(to percentage: Double, completion: ((Bool) -> Void)? = nil) {
+    public func seek(to percentage: Double, completion: (@Sendable (Bool) -> Void)? = nil) {
         if let duration = queue?.current.duration {
             seek(to: .seconds(percentage * duration.seconds), completion: completion)
         } else {
@@ -180,12 +186,20 @@ public final class Player {
     
     // MARK: - Private Functions
     
-    private func loadQueue(_ queue: Queue, autoplay: Bool = false) {
+    private func loadQueue(_ queue: Queue, restorePlaybackPosition: Bool = false, autoplay: Bool = false) {
         self.queue = queue
+        
+        if !restorePlaybackPosition {
+            UserDefaults.standard.remove(for: .playbackPosition)
+        }
         
         loadQueueTask = Task {
             await refreshArtworkURL()
             await load(queue.current)
+            
+            if restorePlaybackPosition, let playbackPosition = UserDefaults.standard.integer(for: .playbackPosition) {
+                seek(to: Duration.seconds(playbackPosition))
+            }
             
             if autoplay {
                 play()
@@ -226,7 +240,6 @@ public final class Player {
         }
     }
     
-    @MainActor
     private func refreshArtworkURL() async {
         guard let queue else {
             artworkURL = nil
@@ -239,6 +252,16 @@ public final class Player {
             if artworkURL != self.artworkURL {
                 self.artworkURL = artworkURL
             }
+        }
+    }
+    
+    private func storePlaybackPosition(isExact: Bool = false) async {
+        if let currentPlaybackPosition {
+            if isExact || Int(currentPlaybackPosition.seconds) % 10 == 0 {
+                UserDefaults.standard.set(Int(currentPlaybackPosition.seconds), for: .playbackPosition)
+            }
+        } else {
+            UserDefaults.standard.remove(for: .playbackPosition)
         }
     }
 }

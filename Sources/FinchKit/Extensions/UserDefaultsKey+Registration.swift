@@ -13,4 +13,5 @@ extension UserDefaults.Key {
     
     static let host: UserDefaults.Key = "host"
     static let queue: UserDefaults.Key = "queue"
+    static let playbackPosition: UserDefaults.Key = "playbackPosition"
 }
