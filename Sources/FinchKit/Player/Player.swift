@@ -132,7 +132,7 @@ public final class Player {
         guard let queue else { return }
         
         if let position = currentPlaybackPosition, position > .seconds(10) || queue.current == queue.context.items.first {
-            seek(to: .zero)
+            Task { await seek(to: .zero) }
         } else if let previousItem = queue.previousItems.last {
             play(previousItem)
         }
@@ -140,23 +140,24 @@ public final class Player {
     
     public func next() {
         player.advanceToNextItem()
-        seek(to: .zero)
+        Task { await seek(to: .zero) }
     }
     
-    public func seek(to duration: Duration, completion: (@Sendable (Bool) -> Void)? = nil) {
-        player.seek(to: duration) { isCompleted in
-            completion?(isCompleted)
-            
-            Task { await self.storePlaybackPosition(isExact: true) }
+    @discardableResult public func seek(to duration: Duration) async -> Bool {
+        let isSuccess = await player.seek(to: duration)
+        if isSuccess {
+            await self.storePlaybackPosition(isExact: true)
         }
+        
+        return isSuccess
     }
     
-    public func seek(to percentage: Double, completion: (@Sendable (Bool) -> Void)? = nil) {
+    public func seek(to percentage: Double) async -> Bool {
         if let duration = queue?.current.duration {
-            seek(to: .seconds(percentage * duration.seconds), completion: completion)
-        } else {
-            completion?(false)
+            return await seek(to: .seconds(percentage * duration.seconds))
         }
+        
+        return false
     }
     
     public func isPlaying(_ item: Item) -> Bool {
@@ -198,7 +199,7 @@ public final class Player {
             await load(queue.current)
             
             if restorePlaybackPosition, let playbackPosition = UserDefaults.standard.integer(for: .playbackPosition) {
-                seek(to: Duration.seconds(playbackPosition))
+                await seek(to: Duration.seconds(playbackPosition))
             }
             
             if autoplay {

@@ -7,7 +7,6 @@
 
 import Foundation
 import AVFoundation
-import FinchKit
 
 extension Player {
     struct Asset: Hashable {

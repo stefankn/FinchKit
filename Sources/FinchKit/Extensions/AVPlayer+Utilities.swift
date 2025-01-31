@@ -24,13 +24,13 @@ extension AVPlayer {
     
     // MARK: - Functions
     
-    func seek(to duration: Duration, completion: (@Sendable (Bool) -> Void)? = nil) {
-        let time = CMTime(seconds: duration.seconds, preferredTimescale: 60000)
-        
-        if let completion {
-            seek(to: time, completionHandler: completion)
-        } else {
-            seek(to: time)
+    @discardableResult func seek(to duration: Duration) async -> Bool {
+        await withCheckedContinuation { continuation in
+            let time = CMTime(seconds: duration.seconds, preferredTimescale: 60000)
+            
+            seek(to: time) { isCompleted in
+                continuation.resume(with: .success(isCompleted))
+            }
         }
     }
 }
