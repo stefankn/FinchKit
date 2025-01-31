@@ -28,11 +28,15 @@ public final class Player {
     
     
     // MARK: - Properties
-    
-    public private(set) var queue: Queue?
+
     public private(set) var status: AVPlayer.TimeControlStatus = .waitingToPlayAtSpecifiedRate
     public private(set) var artworkURL: URL?
     public private(set) var currentPlaybackPosition: Duration?
+    public private(set) var queue: Queue? {
+        didSet {
+            UserDefaults.standard.set(queue, for: .queue)
+        }
+    }
     
     public var isPlaying: Bool {
         status == .playing
@@ -79,6 +83,10 @@ public final class Player {
             for await duration in player.periodicTimes {
                 self.currentPlaybackPosition = duration
             }
+        }
+        
+        if let queue = UserDefaults.standard.object(Queue.self, for: .queue) {
+            loadQueue(queue)
         }
     }
     

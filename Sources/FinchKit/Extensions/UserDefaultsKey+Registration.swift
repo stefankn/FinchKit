@@ -12,4 +12,5 @@ extension UserDefaults.Key {
     // MARK: - Constants
     
     static let host: UserDefaults.Key = "host"
+    static let queue: UserDefaults.Key = "queue"
 }
