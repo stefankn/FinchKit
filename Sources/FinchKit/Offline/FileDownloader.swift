@@ -20,7 +20,7 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
     @ObservationIgnored
     @Injected(\.store) private var store
     
-    private var tasks: [Item: Task<Void, Never>] = [:]
+    private var tasks: [Item: Task<Item, any Error>] = [:]
     private var progressObservationTasks: [Item: Task<Void, Never>] = [:]
     private var initiatedDownloads: [URL: Item] = [:]
     
@@ -41,30 +41,38 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
     public func download(_ item: Item) async throws -> Item {
         guard !isDownloading(item), try await !store.isAvailableOffline(item), let offlineItemsPath = URL.offlineItemsPath else { return item }
         
-        let filename = "\(item.id).\(item.format.lowercased())"
-        let localURL = offlineItemsPath.appendingPathComponent(filename)
-        
-        downloadsInProgress[item] = 0
-        
-        let url = try await finchClient.streamURL(for: item)
-        initiatedDownloads[url] = item
-        
-        let (tempURL, _) = try await URLSession.shared.download(from: url, delegate: self)
-        cancelProgressObservation(for: item)
+        let task = Task {
+            let filename = "\(item.id).\(item.format.lowercased())"
+            let localURL = offlineItemsPath.appendingPathComponent(filename)
+            
+            downloadsInProgress[item] = 0
+            
+            let url = try await finchClient.streamURL(for: item)
+            initiatedDownloads[url] = item
+            
+            let (tempURL, _) = try await URLSession.shared.download(from: url, delegate: self)
+            cancelProgressObservation(for: item)
 
-        let fileManager = FileManager.default
-        try fileManager.createDirectory(atPath: localURL.path, withIntermediateDirectories: true)
-        
-        if fileManager.fileExists(atPath: localURL.path()) {
-            try fileManager.removeItem(at: localURL)
+            let fileManager = FileManager.default
+            try fileManager.createDirectory(atPath: localURL.path, withIntermediateDirectories: true)
+            
+            if fileManager.fileExists(atPath: localURL.path()) {
+                try fileManager.removeItem(at: localURL)
+            }
+            
+            try fileManager.copyItem(at: tempURL, to: localURL)
+            try fileManager.removeItem(at: tempURL)
+            
+            downloadsInProgress.removeValue(forKey: item)
+            
+            return try await store.createOfflineItem(for: item, filename: filename)
         }
         
-        try fileManager.copyItem(at: tempURL, to: localURL)
-        try fileManager.removeItem(at: tempURL)
+        tasks[item] = task
+        let updatedItem = try await task.value
+        tasks.removeValue(forKey: item)
         
-        downloadsInProgress.removeValue(forKey: item)
-        
-        return try await store.createOfflineItem(for: item, filename: filename)
+        return updatedItem
     }
     
     public func isDownloading(_ item: Item) -> Bool {
@@ -82,6 +90,10 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         item.fileRemoved()
         
         return item
+    }
+    
+    public func cancelDownload(for item: Item) {
+        tasks[item]?.cancel()
     }
     
     
