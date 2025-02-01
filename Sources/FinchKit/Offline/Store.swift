@@ -49,6 +49,14 @@ public actor Store {
         return try context.fetch(FetchDescriptor<OfflineItem>(predicate: #Predicate{ $0.id == itemId })).first != nil
     }
     
+    func deleteOfflineItem(for item: Item) throws {
+        let context = ModelContext(container)
+        let itemId = item.id
+        
+        try context.delete(model: OfflineItem.self, where: #Predicate{ $0.id == itemId })
+        try context.save()
+    }
+    
     func createOfflineItem(for item: Item, filename: String) throws -> Item {
         let context = ModelContext(container)
         let offlineItem = OfflineItem(item, filename: filename)

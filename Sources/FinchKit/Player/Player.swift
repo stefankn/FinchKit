@@ -131,7 +131,7 @@ public final class Player {
     public func previous() {
         guard let queue else { return }
         
-        if let position = currentPlaybackPosition, position > .seconds(10) || queue.current == queue.context.items.first {
+        if let position = currentPlaybackPosition, position > .seconds(10) || queue.current.id == queue.context.items.first?.id {
             Task { await seek(to: .zero) }
         } else if let previousItem = queue.previousItems.last {
             play(previousItem)
@@ -161,7 +161,7 @@ public final class Player {
     }
     
     public func isPlaying(_ item: Item) -> Bool {
-        queue?.current == item
+        queue?.current.id == item.id
     }
     
     public func isAlbumLoaded(_ album: Album) -> Bool {
@@ -180,35 +180,32 @@ public final class Player {
         
         queue = nil
         player.removeAllItems()
+        assetMapping.removeAll()
         artworkURL = nil
     }
     
     public func updateQueue(for item: Item) {
-        guard let queue, let offlineURL = item.offlineURL else { return }
+        guard let queue else { return }
         
         self.queue?.replace(item)
         
-        if queue.nextItems.contains(where: { $0.id == item.id }), let asset = assetMapping.first(where: { $0.item.id == item.id }) {
-            assetMapping.remove(asset)
-            
-            if
-                let playerItem = player.items().first(where: { $0.asset == asset.asset }),
-                let index = player.items().firstIndex(of: playerItem) {
+        // If the updated item is in the queue, update the player items
+        guard queue.nextItems.contains(where: { $0.id == item.id }) else { return }
+        
+        loadQueueTask?.cancel()
+        
+        for nextItem in queue.nextItems {
+            if let asset = assetMapping.first(where: { $0.item.id == nextItem.id }) {
+                assetMapping.remove(asset)
                 
-                if index > 0 {
+                if let playerItem = player.items().first(where: { $0.asset == asset.asset }) {
                     player.remove(playerItem)
-                    
-                    let asset = AVURLAsset(url: offlineURL)
-                    assetMapping.insert(Asset(asset, item: item))
-                    
-                    let item = AVPlayerItem(asset: asset)
-                    let previousItem = player.items()[index - 1]
-                    
-                    if player.canInsert(item, after: previousItem) {
-                        player.insert(item, after: previousItem)
-                    }
                 }
             }
+        }
+        
+        loadQueueTask = Task {
+            await loadNextItems()
         }
     }
     
@@ -235,9 +232,15 @@ public final class Player {
                 play()
             }
             
-            for item in queue.nextItems {
-                await load(item)
-            }
+            await loadNextItems()
+        }
+    }
+    
+    private func loadNextItems() async {
+        guard let queue else { return }
+        
+        for item in queue.nextItems where !Task.isCancelled {
+            await load(item)
         }
     }
     

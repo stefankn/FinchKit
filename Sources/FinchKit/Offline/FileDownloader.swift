@@ -62,11 +62,26 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         try fileManager.copyItem(at: tempURL, to: localURL)
         try fileManager.removeItem(at: tempURL)
         
+        downloadsInProgress.removeValue(forKey: item)
+        
         return try await store.createOfflineItem(for: item, filename: filename)
     }
     
     public func isDownloading(_ item: Item) -> Bool {
         tasks.keys.contains(item)
+    }
+    
+    public func deleteDownload(for item: Item) async throws -> Item {
+        try await store.deleteOfflineItem(for: item)
+        
+        if let offlineURL = item.offlineURL {
+            try FileManager.default.removeItem(at: offlineURL)
+        }
+        
+        var item = item
+        item.fileRemoved()
+        
+        return item
     }
     
     
@@ -90,6 +105,7 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
             await MainActor.run { progressObservationTasks[item] = progressTask }
         }
     }
+    
     
     
     // MARK: - Private Functions

@@ -27,7 +27,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable {
     public let comments: String?
     public let musicBrainzId: String?
     public let albumId: Int?
-    public let offlineFilename: String?
+    private(set) var offlineFilename: String?
     
     public var durationDescription: String {
         duration.formatted(Duration.TimeFormatStyle(pattern: (duration.seconds / 60) >= 60 ? .hourMinuteSecond : .minuteSecond))
@@ -85,5 +85,13 @@ public struct Item: Codable, Hashable, Identifiable, Sendable {
         musicBrainzId = offlineItem.musicBrainzId
         albumId = offlineItem.albumId
         offlineFilename = offlineItem.filename
+    }
+    
+    
+    
+    // MARK: - Functions
+    
+    mutating func fileRemoved() {
+        offlineFilename = nil
     }
 }
