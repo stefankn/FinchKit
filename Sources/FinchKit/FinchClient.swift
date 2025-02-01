@@ -68,7 +68,6 @@ public actor FinchClient: Client {
         let items: [ItemResponse] = try await get("/api/v1/albums/\(album.id)/items")
         
         let offlineItems = try await store.items(for: album)
-        print("offline items: \(offlineItems.count)")
         return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }
     }
     

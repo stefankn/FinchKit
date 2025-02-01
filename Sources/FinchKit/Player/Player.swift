@@ -183,6 +183,35 @@ public final class Player {
         artworkURL = nil
     }
     
+    public func updateQueue(for item: Item) {
+        guard let queue, let offlineURL = item.offlineURL else { return }
+        
+        self.queue?.replace(item)
+        
+        if queue.nextItems.contains(where: { $0.id == item.id }), let asset = assetMapping.first(where: { $0.item.id == item.id }) {
+            assetMapping.remove(asset)
+            
+            if
+                let playerItem = player.items().first(where: { $0.asset == asset.asset }),
+                let index = player.items().firstIndex(of: playerItem) {
+                
+                if index > 0 {
+                    player.remove(playerItem)
+                    
+                    let asset = AVURLAsset(url: offlineURL)
+                    assetMapping.insert(Asset(asset, item: item))
+                    
+                    let item = AVPlayerItem(asset: asset)
+                    let previousItem = player.items()[index - 1]
+                    
+                    if player.canInsert(item, after: previousItem) {
+                        player.insert(item, after: previousItem)
+                    }
+                }
+            }
+        }
+    }
+    
     
     
     // MARK: - Private Functions
@@ -214,6 +243,8 @@ public final class Player {
     
     private func playerItemUpdated(_ playerItem: AVPlayerItem?) {
         guard let item = item(for: playerItem) else { return }
+        
+        print("item update, url: \((playerItem?.asset as? AVURLAsset)?.url)")
         
         queue?.select(item)
     }

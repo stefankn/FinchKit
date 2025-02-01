@@ -28,11 +28,11 @@ extension Player {
         // MARK: - Properties
         
         public private(set) var current: Item
-        public let context: Context
+        public private(set) var context: Context
         
         public var previousItems: [Item] {
             let items = context.items
-            if let index = items.firstIndex(of: current) {
+            if let index = items.firstIndex(where: { $0.id == current.id }) {
                 if index > 0 {
                     return Array(items.prefix(upTo: index))
                 }
@@ -43,7 +43,7 @@ extension Player {
         
         public var nextItems: [Item] {
             let items = context.items
-            if let index = items.firstIndex(of: current) {
+            if let index = items.firstIndex(where: { $0.id == current.id }) {
                 if index + 1 < items.count {
                     return Array(items.suffix(from: index + 1))
                 }
@@ -65,9 +65,18 @@ extension Player {
         // MARK: - Functions
         
         public mutating func select(_ item: Item) {
-            guard context.items.contains(item) else { return }
+            guard context.items.contains(where: { $0.id == item.id }) else { return }
             
             current = item
+        }
+        
+        public mutating func replace(_ item: Item) {
+            guard context.items.contains(where: { $0.id == item.id }), item.id != current.id else { return }
+            
+            switch context {
+            case .album(let album, let items):
+                context = .album(album, items: items.map{ $0.id == item.id ? item : $0 })
+            }
         }
     }
 }
