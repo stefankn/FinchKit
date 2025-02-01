@@ -36,6 +36,7 @@ public final class Player {
     
     public private(set) var queue: Queue? {
         didSet {
+            Task { await updateInfoCenter() }
             UserDefaults.standard.set(queue, for: .queue)
         }
     }
@@ -68,6 +69,8 @@ public final class Player {
         } catch {
             assertionFailure("Failed to configure `AVAudioSession`: \(error.localizedDescription)")
         }
+        
+        setupRemoteControl()
         
         player
             .publisher(for: \.timeControlStatus)
@@ -107,10 +110,14 @@ public final class Player {
     
     public func play() {
         player.play()
+        
+        Task { await updateInfoCenter() }
     }
     
     public func pause() {
         player.pause()
+        
+        Task { await updateInfoCenter() }
     }
     
     public func toggle() {
@@ -148,6 +155,8 @@ public final class Player {
         if isSuccess {
             await self.storePlaybackPosition(isExact: true)
         }
+        
+        await updateInfoCenter()
         
         return isSuccess
     }
@@ -299,6 +308,82 @@ public final class Player {
             }
         } else {
             UserDefaults.standard.remove(for: .playbackPosition)
+        }
+    }
+    
+    private func updateInfoCenter() async {
+        MPRemoteCommandCenter.shared().previousTrackCommand.isEnabled = queue?.previousItems.isEmpty == false
+        MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled = queue?.nextItems.isEmpty == false
+        
+        guard let queue else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+        
+        if let artworkURL {
+            let request = URLRequest(url: artworkURL, cachePolicy: .returnCacheDataElseLoad)
+            if let response = URLSession.shared.configuration.urlCache?.cachedResponse(for: request) {
+                setInfoCenterData(queue.current, imageData: response.data)
+            } else {
+                do {
+                    let (data, _) = try await URLSession.shared.data(for: request)
+                    setInfoCenterData(queue.current, imageData: data)
+                } catch {
+                    print(error)
+                }
+            }
+        } else {
+            setInfoCenterData(queue.current)
+        }
+    }
+    
+    private func setInfoCenterData(_ item: Item, imageData: Data? = nil) {
+        guard let queue else { return }
+        
+        var info: [String: Any] = [
+            MPMediaItemPropertyArtist: item.artists,
+            MPMediaItemPropertyTitle: item.title,
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: player.currentItem?.currentTime().seconds ?? 0,
+            MPMediaItemPropertyPlaybackDuration: item.duration.seconds,
+            MPNowPlayingInfoPropertyPlaybackRate: player.rate
+        ]
+        
+        switch queue.context {
+        case .album(let album, _):
+            info[MPMediaItemPropertyAlbumTitle] = album.title
+        }
+        
+        if let imageData, let image = UIImage(data: imageData) {
+            let artwork = MPMediaItemArtwork(boundsSize: image.size) { @Sendable _ in image }
+            info[MPMediaItemPropertyArtwork] = artwork
+        }
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+    
+    private func setupRemoteControl() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.playCommand.addTarget { _ in
+            self.play()
+            return .success
+        }
+        commandCenter.pauseCommand.addTarget { _ in
+            self.pause()
+            return .success
+        }
+        commandCenter.changePlaybackPositionCommand.addTarget { event in
+            if let event = event as? MPChangePlaybackPositionCommandEvent {
+                Task { await self.seek(to: .seconds(event.positionTime)) }
+            }
+            return .success
+        }
+        commandCenter.previousTrackCommand.addTarget { event in
+            self.previous()
+            return .success
+        }
+        commandCenter.nextTrackCommand.addTarget { event in
+            self.next()
+            return .success
         }
     }
 }

@@ -8,11 +8,11 @@
 import Foundation
 
 extension Player {
-    public struct Queue: Codable {
+    public struct Queue: Codable, Sendable {
         
         // MARK: - Types
         
-        public enum Context: Codable {
+        public enum Context: Codable, Sendable {
             case album(Album, items: [Item])
             
             var items: [Item] {
