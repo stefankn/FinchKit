@@ -226,15 +226,17 @@ public final class Player {
     
     private func load(_ item: Item) async {
         do {
-            let streamURL = try await finchClient.streamURL(for: item)
-            
-            let asset = AVURLAsset(url: streamURL)
-            assetMapping.insert(Asset(asset, item: item))
-            
-            let item = AVPlayerItem(asset: asset)
-            
-            if player.canInsert(item, after: nil) {
-                player.insert(item, after: nil)
+            let streamURL = item.offlineURL != nil ? item.offlineURL : try await finchClient.streamURL(for: item)
+
+            if let streamURL {
+                let asset = AVURLAsset(url: streamURL)
+                assetMapping.insert(Asset(asset, item: item))
+                
+                let item = AVPlayerItem(asset: asset)
+                
+                if player.canInsert(item, after: nil) {
+                    player.insert(item, after: nil)
+                }
             }
         } catch {
             print(error)

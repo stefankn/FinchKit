@@ -7,10 +7,8 @@
 
 import Foundation
 
-extension Album {
-    public enum AlbumType: String, Codable, Sendable {
-        case album
-        case compilation
-        case djmix = "dj-mix"
-    }
+public enum AlbumType: String, Codable, Sendable {
+    case album
+    case compilation
+    case djmix = "dj-mix"
 }

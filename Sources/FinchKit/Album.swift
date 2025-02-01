@@ -2,32 +2,12 @@
 //  Album.swift
 //  FinchKit
 //
-//  Created by Stefan Klein Nulent on 26/01/2025.
+//  Created by Stefan Klein Nulent on 31/01/2025.
 //
 
 import Foundation
 
 public struct Album: Codable, Identifiable, Hashable, Sendable {
-    
-    // MARK: - Types
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case title
-        case artist
-        case artistSortKey = "artist_sort_key"
-        case type
-        case types
-        case genre
-        case year
-        case discCount = "disc_count"
-        case label
-        case isArtworkAvailable = "is_artwork_available"
-        case addedAt = "added_at"
-        case media
-    }
-    
-    
     
     // MARK: - Properties
     
@@ -44,4 +24,24 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
     public let isArtworkAvailable: Bool
     public let addedAt: Date
     public let media: String?
+    
+    
+    
+    // MARK: -  Construction
+    
+    init(_ response: AlbumResponse) {
+        id = response.id
+        title = response.title
+        artist = response.artist
+        artistSortKey = response.artistSortKey
+        type = response.type
+        types = response.types
+        genre = response.genre
+        year = response.year
+        discCount = response.discCount
+        label = response.label
+        isArtworkAvailable = response.isArtworkAvailable
+        addedAt = response.addedAt
+        media = response.media
+    }
 }

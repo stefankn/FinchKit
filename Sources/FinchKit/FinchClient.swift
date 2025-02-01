@@ -14,6 +14,11 @@ public actor FinchClient: Client {
     typealias Parameters = [(name: String, value: CustomStringConvertible)]
     
     
+    // MARK: - Private Properties
+    
+    private let store: Store
+    
+    
     
     // MARK: - Properties
     
@@ -32,8 +37,11 @@ public actor FinchClient: Client {
     
     // MARK: - Construction
     
-    public init() {
+    public init(store: Store) {
+        self.store = store
+        
         guard let host = UserDefaults.standard.string(for: .host), let url = URL(string: host) else { return }
+        
         self.url = url
     }
     
@@ -52,11 +60,16 @@ public actor FinchClient: Client {
     }
     
     public func getAlbums() async throws -> [Album] {
-        try await get("/api/v1/albums")
+        let albums: [AlbumResponse] = try await get("/api/v1/albums")
+        return albums.map(Album.init)
     }
     
     public func getItems(for album: Album) async throws -> [Item] {
-        try await get("/api/v1/albums/\(album.id)/items")
+        let items: [ItemResponse] = try await get("/api/v1/albums/\(album.id)/items")
+        
+        let offlineItems = try await store.items(for: album)
+        print("offline items: \(offlineItems.count)")
+        return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }
     }
     
     @discardableResult public func getStats() async throws -> Stats {
@@ -76,7 +89,7 @@ public actor FinchClient: Client {
     }
     
     public func streamURL(for item: Item) throws -> URL {
-        try url(for: "/api/v1/items/\(item.id ?? 0)/stream")
+        try url(for: "/api/v1/items/\(item.id)/stream")
     }
     
     
