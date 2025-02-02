@@ -31,11 +31,13 @@ import SwiftData
     var albumId: Int?
     var filename: String
     
+    var album: OfflineAlbum?
+    
     
     
     // MARK: - Construction
     
-    init(_ item: Item, filename: String) {
+    init(_ item: Item, filename: String, album: OfflineAlbum?) {
         id = item.id
         
         track = item.track
@@ -55,5 +57,6 @@ import SwiftData
         albumId = item.albumId
         
         self.filename = filename
+        self.album = album
     }
 }

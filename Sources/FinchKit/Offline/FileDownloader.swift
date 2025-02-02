@@ -39,7 +39,15 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         (try? await store.isAvailableOffline(item)) == true
     }
     
+    public func isAvailableOffline(_ album: Album) async -> Bool {
+        (try? await store.isAvailableOffline(album)) == true
+    }
+    
     public func download(_ items: [Item], from album: Album) async throws -> [Item] {
+        if !(try await store.isAvailableOffline(album)) {
+            try await store.createOfflineAlbum(for: album)
+        }
+        
         do {
             let items = try await withThrowingTaskGroup(of: Item.self, returning: [Item].self) { taskGroup in
                 taskGroups[album] = taskGroup
@@ -63,7 +71,59 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         }
     }
     
-    public func download(_ item: Item) async throws -> Item {
+    public func download(_ item: Item, from album: Album) async throws -> Item {
+        if !(try await store.isAvailableOffline(album)) {
+            try await store.createOfflineAlbum(for: album)
+        }
+        
+        return try await download(item)
+    }
+    
+    public func isDownloading(_ item: Item) -> Bool {
+        tasks.keys.contains(where: { $0.id == item.id })
+    }
+    
+    public func deleteDownload(for item: Item) async throws -> Item {
+        try await store.deleteOfflineItem(for: item)
+        return try await delete(item)
+    }
+    
+    public func deleteDownload(for album: Album, items: [Item]) async throws -> [Item] {
+        taskGroups[album]?.cancelAll()
+        
+        try await store.deleteOfflineAlbum(for: album)
+        
+        return try await items.asyncMap{ try await delete($0) }.sorted()
+    }
+    
+    
+    
+    // MARK: URLSessionsTaskDelegate Functions
+    
+    nonisolated public func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+        guard let url = task.originalRequest?.url else { return }
+        
+        Task {
+            guard let item = await initiatedDownloads[url] else { return }
+            await MainActor.run { _ = initiatedDownloads.removeValue(forKey: url) }
+            
+            let progressTask = Task {
+                for await progress in task.progressStream {
+                    await MainActor.run {
+                        self.downloadsInProgress[item] = progress
+                    }
+                }
+            }
+            
+            await MainActor.run { progressObservationTasks[item] = progressTask }
+        }
+    }
+    
+    
+    
+    // MARK: - Private Functions
+    
+    private func download(_ item: Item) async throws -> Item {
         guard !isDownloading(item), try await !store.isAvailableOffline(item), let offlineItemsPath = URL.offlineItemsPath else { return item }
         
         let task = Task {
@@ -112,18 +172,12 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         }
     }
     
-    public func isDownloading(_ item: Item) -> Bool {
-        tasks.keys.contains(where: { $0.id == item.id })
-    }
-    
-    public func deleteDownload(for item: Item) async throws -> Item {
+    private func delete(_ item: Item) async throws -> Item {
         tasks[item]?.cancel()
         
         if let key = downloadsInProgress.keys.first(where: { $0.id == item.id }) {
             downloadsInProgress.removeValue(forKey: key)
         }
-        
-        try await store.deleteOfflineItem(for: item)
         
         if let offlineURL = item.offlineURL {
             try FileManager.default.removeItem(at: offlineURL)
@@ -134,38 +188,6 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         
         return item
     }
-    
-    public func deleteDownload(for album: Album, items: [Item]) async throws -> [Item] {
-        taskGroups[album]?.cancelAll()
-        
-        return try await items.asyncMap{ try await deleteDownload(for: $0) }.sorted()
-    }
-    
-    
-    // MARK: URLSessionsTaskDelegate Functions
-    
-    nonisolated public func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
-        guard let url = task.originalRequest?.url else { return }
-        
-        Task {
-            guard let item = await initiatedDownloads[url] else { return }
-            await MainActor.run { _ = initiatedDownloads.removeValue(forKey: url) }
-            
-            let progressTask = Task {
-                for await progress in task.progressStream {
-                    await MainActor.run {
-                        self.downloadsInProgress[item] = progress
-                    }
-                }
-            }
-            
-            await MainActor.run { progressObservationTasks[item] = progressTask }
-        }
-    }
-    
-    
-    
-    // MARK: - Private Functions
     
     private func cancelProgressObservation(for item: Item) {
         if let key = progressObservationTasks.keys.first(where: { $0.id == item.id }) {

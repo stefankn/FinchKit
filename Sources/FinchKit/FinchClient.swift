@@ -61,7 +61,9 @@ public actor FinchClient: Client {
     
     public func getAlbums() async throws -> [Album] {
         let albums: [AlbumResponse] = try await get("/api/v1/albums")
-        return albums.map(Album.init)
+        
+        let offlineAlbums = try await store.getOfflineAlbums()
+        return albums.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
     }
     
     public func getItems(for album: Album) async throws -> [Item] {
