@@ -88,7 +88,9 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
             try fileManager.copyItem(at: tempURL, to: localURL)
             try fileManager.removeItem(at: tempURL)
             
-            downloadsInProgress.removeValue(forKey: item)
+            if let key = downloadsInProgress.keys.first(where: { $0.id == item.id }) {
+                downloadsInProgress.removeValue(forKey: key)
+            }
             
             return try await store.createOfflineItem(for: item, filename: filename)
         }
@@ -97,21 +99,29 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         
         do {
             let updatedItem = try await task.value
-            tasks.removeValue(forKey: item)
+            if let key = tasks.keys.first(where: { $0.id == item.id }) {
+                tasks.removeValue(forKey: key)
+            }
             
             return updatedItem
         } catch {
-            tasks.removeValue(forKey: item)
+            if let key = tasks.keys.first(where: { $0.id == item.id }) {
+                tasks.removeValue(forKey: key)
+            }
             throw error
         }
     }
     
     public func isDownloading(_ item: Item) -> Bool {
-        tasks.keys.contains(item)
+        tasks.keys.contains(where: { $0.id == item.id })
     }
     
     public func deleteDownload(for item: Item) async throws -> Item {
         tasks[item]?.cancel()
+        
+        if let key = downloadsInProgress.keys.first(where: { $0.id == item.id }) {
+            downloadsInProgress.removeValue(forKey: key)
+        }
         
         try await store.deleteOfflineItem(for: item)
         
@@ -158,7 +168,9 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
     // MARK: - Private Functions
     
     private func cancelProgressObservation(for item: Item) {
-        progressObservationTasks[item]?.cancel()
-        progressObservationTasks.removeValue(forKey: item)
+        if let key = progressObservationTasks.keys.first(where: { $0.id == item.id }) {
+            progressObservationTasks[key]?.cancel()
+            progressObservationTasks.removeValue(forKey: key)
+        }
     }
 }
