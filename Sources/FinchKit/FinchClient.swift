@@ -18,6 +18,10 @@ public actor FinchClient: Client {
     
     private let store: Store
     
+    private var isOfflineModeEnabled: Bool {
+        UserDefaults.standard.bool(for: .isOfflineModeEnabled)
+    }
+    
     
     
     // MARK: - Properties
@@ -33,6 +37,7 @@ public actor FinchClient: Client {
             }
         }
     }
+    
     
     
     // MARK: - Construction
@@ -60,17 +65,25 @@ public actor FinchClient: Client {
     }
     
     public func getAlbums() async throws -> [Album] {
-        let albums: [AlbumResponse] = try await get("/api/v1/albums")
-        
         let offlineAlbums = try await store.getOfflineAlbums()
-        return albums.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
+        
+        if isOfflineModeEnabled {
+            return offlineAlbums
+        } else {
+            let albums: [AlbumResponse] = try await get("/api/v1/albums")
+            return albums.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
+        }
     }
     
     public func getItems(for album: Album) async throws -> [Item] {
-        let items: [ItemResponse] = try await get("/api/v1/albums/\(album.id)/items")
-        
         let offlineItems = try await store.items(for: album)
-        return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
+        
+        if isOfflineModeEnabled {
+            return offlineItems.sorted()
+        } else {
+            let items: [ItemResponse] = try await get("/api/v1/albums/\(album.id)/items")
+            return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
+        }
     }
     
     @discardableResult public func getStats() async throws -> Stats {

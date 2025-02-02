@@ -25,6 +25,10 @@ public final class Player {
     private var playbackPositionObservationToken: Any?
     private var subscriptions: Set<AnyCancellable> = []
     
+    private var isOfflineModeEnabled: Bool {
+        UserDefaults.standard.bool(for: .isOfflineModeEnabled)
+    }
+    
     
     
     // MARK: - Properties
@@ -269,7 +273,11 @@ public final class Player {
     
     private func load(_ item: Item) async {
         do {
-            let streamURL = item.offlineURL != nil ? item.offlineURL : try await finchClient.streamURL(for: item)
+            var streamURL = item.offlineURL
+            
+            if streamURL == nil && !isOfflineModeEnabled {
+                streamURL = try await finchClient.streamURL(for: item)
+            }
 
             if let streamURL {
                 let asset = AVURLAsset(url: streamURL)

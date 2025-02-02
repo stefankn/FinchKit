@@ -8,13 +8,13 @@
 import Foundation
 
 extension UserDefaults {
-    struct Key: RawRepresentable, ExpressibleByStringLiteral {
+    public struct Key: RawRepresentable, ExpressibleByStringLiteral, Sendable {
         
         // MARK: - Properties
         
         // MARK: RawRepresentable Properties
         
-        var rawValue: String
+        public var rawValue: String
         
         
         
@@ -22,20 +22,20 @@ extension UserDefaults {
         
         // MARK: RawRepresentable Construction
         
-        init(rawValue: String) {
+        public init(rawValue: String) {
             self.rawValue = rawValue
         }
         
         
         // MARK: ExpressibleByStringLiteral Construction
         
-        init(stringLiteral value: StringLiteralType) {
+        public init(stringLiteral value: StringLiteralType) {
             self.init(rawValue: value)
         }
     }
 }
 
-extension UserDefaults {
+public extension UserDefaults {
     
     // MARK: - Functions
     
