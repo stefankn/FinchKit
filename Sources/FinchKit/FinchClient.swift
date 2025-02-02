@@ -52,7 +52,7 @@ public actor FinchClient: Client {
     public func connect(to url: URL) async throws {
         do {
             self.url = url
-            try await getStats()
+            let _: Stats = try await get("/api/v1/stats", waitsForConnectivity: true)
         } catch {
             self.url = nil
             throw error
