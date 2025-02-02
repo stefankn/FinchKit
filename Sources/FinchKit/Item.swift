@@ -7,8 +7,8 @@
 
 import Foundation
 
-public struct Item: Codable, Hashable, Identifiable, Sendable {
-    
+public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
+
     // MARK: - Properties
     
     public let id: Int
@@ -93,5 +93,12 @@ public struct Item: Codable, Hashable, Identifiable, Sendable {
     
     mutating func fileRemoved() {
         offlineFilename = nil
+    }
+    
+    
+    // MARK: Comparable Functions
+    
+    public static func < (lhs: Item, rhs: Item) -> Bool {
+        lhs.track ?? 0 < rhs.track ?? 0
     }
 }
