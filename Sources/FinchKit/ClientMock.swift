@@ -16,6 +16,13 @@ public final actor ClientMock: Client {
     public var url: URL? = nil
     
     
+    
+    // MARK: - Construction
+    
+    public init() {}
+    
+    
+    
     // MARK: - Functions
     
     // MARK: Client Functions

@@ -12,7 +12,7 @@ public extension Container {
     
     // MARK: - Properties
     
-    var finchClient: Factory<FinchClient> {
+    var finchClient: Factory<Client> {
         Factory(self) { FinchClient(store: self.store()) }.singleton
     }
     

@@ -25,8 +25,9 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
     public let addedAt: Date
     public let media: String?
     public let isOfflineAvailable: Bool
-    
-    
+}
+
+extension Album {
     
     // MARK: -  Construction
     
