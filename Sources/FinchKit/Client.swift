@@ -17,9 +17,9 @@ public protocol Client: Actor {
     // MARK: - Functions
     
     func connect(to url: URL) async throws
-    func getAlbums() async throws -> [Album]
+    func getAlbums(sorting: Sorting) async throws -> [Album]
     func getItems(for album: Album) async throws -> [Item]
-    func getSingletons() async throws -> [Item]
+    func getSingletons(sorting: Sorting) async throws -> [Item]
     func artworkURL(for album: Album) -> URL?
     func artworkThumbnailURL(for album: Album) -> URL?
     func streamURL(for item: Item) throws -> URL

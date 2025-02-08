@@ -64,13 +64,13 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getAlbums() async throws -> [Album] {
+    public func getAlbums(sorting: Sorting) async throws -> [Album] {
         let offlineAlbums = try await store.getOfflineAlbums()
         
         if isOfflineModeEnabled {
             return offlineAlbums
         } else {
-            let albums: [AlbumResponse] = try await get("/api/v1/albums")
+            let albums: [AlbumResponse] = try await get("/api/v1/albums", parameters: sorting.parameters)
             return albums.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
         }
     }
@@ -86,13 +86,13 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getSingletons() async throws -> [Item] {
+    public func getSingletons(sorting: Sorting) async throws -> [Item] {
         let offlineItems = try await store.getOfflineSingletons()
         
         if isOfflineModeEnabled {
             return offlineItems.sorted()
         } else {
-            let items: [ItemResponse] = try await get("/api/v1/items")
+            let items: [ItemResponse] = try await get("/api/v1/items", parameters: sorting.parameters)
             return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
         }
     }
