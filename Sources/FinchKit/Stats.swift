@@ -30,4 +30,17 @@ public struct Stats: Decodable, Sendable {
     public let artistCount: Int
     public let albumCount: Int
     public let albumArtistCount: Int
+    
+    
+    
+    // MARK: - Construction
+    
+    public init(trackCount: Int, totalTime: String, approximateTotalSize: String, artistCount: Int, albumCount: Int, albumArtistCount: Int) {
+        self.trackCount = trackCount
+        self.totalTime = totalTime
+        self.approximateTotalSize = approximateTotalSize
+        self.artistCount = artistCount
+        self.albumCount = albumCount
+        self.albumArtistCount = albumArtistCount
+    }
 }

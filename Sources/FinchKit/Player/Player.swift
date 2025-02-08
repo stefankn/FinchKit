@@ -57,7 +57,6 @@ public final class Player {
     
     public var isNextTrackAvailable: Bool {
         guard let queue else { return false }
-        
         return !queue.nextItems.isEmpty
     }
     
@@ -65,7 +64,7 @@ public final class Player {
     
     // MARK: - Construction
     
-    public init() {
+    public init(_ initialQueue: Queue? = nil) {
         player.actionAtItemEnd = .advance
         
         do {
@@ -96,7 +95,10 @@ public final class Player {
             }
         }
         
-        if let queue = UserDefaults.standard.object(Queue.self, for: .queue) {
+        if let initialQueue {
+            queue = initialQueue
+            Task { await refreshArtworkURL() }
+        } else if let queue = UserDefaults.standard.object(Queue.self, for: .queue) {
             loadQueue(queue, restorePlaybackPosition: true)
         }
     }

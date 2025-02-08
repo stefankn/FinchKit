@@ -25,11 +25,42 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
     public let addedAt: Date
     public let media: String?
     public let isOfflineAvailable: Bool
-}
-
-extension Album {
     
-    // MARK: -  Construction
+    
+    
+    // MARK: - Construction
+    
+    public init(
+        id: Int,
+        title: String,
+        artist: String,
+        artistSortKey: String,
+        type: AlbumType,
+        types: [AlbumType],
+        genre: String?,
+        year: Int,
+        discCount: Int,
+        label: String?,
+        isArtworkAvailable: Bool,
+        addedAt: Date,
+        media: String?,
+        isOfflineAvailable: Bool
+    ) {
+        self.id = id
+        self.title = title
+        self.artist = artist
+        self.artistSortKey = artistSortKey
+        self.type = type
+        self.types = types
+        self.genre = genre
+        self.year = year
+        self.discCount = discCount
+        self.label = label
+        self.isArtworkAvailable = isArtworkAvailable
+        self.addedAt = addedAt
+        self.media = media
+        self.isOfflineAvailable = isOfflineAvailable
+    }
     
     init(_ response: AlbumResponse) {
         id = response.id

@@ -47,6 +47,44 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     
     // MARK: - Construction
     
+    public init(
+        id: Int,
+        track: Int?,
+        disc: Int?,
+        title: String,
+        artist: String,
+        artists: String,
+        duration: Duration,
+        format: String,
+        bitrate: Int,
+        sampleRate: Int,
+        genre: String?,
+        lyricist: String?,
+        composer: String?,
+        comments: String?,
+        musicBrainzId: String?,
+        albumId: Int?,
+        offlineFilename: String?
+    ) {
+        self.id = id
+        self.track = track
+        self.disc = disc
+        self.title = title
+        self.artist = artist
+        self.artists = artists
+        self.duration = duration
+        self.format = format
+        self.bitrate = bitrate
+        self.sampleRate = sampleRate
+        self.genre = genre
+        self.lyricist = lyricist
+        self.composer = composer
+        self.comments = comments
+        self.musicBrainzId = musicBrainzId
+        self.albumId = albumId
+        self.offlineFilename = offlineFilename
+    }
+    
     init(_ response: ItemResponse) {
         id = response.id
         track = response.track

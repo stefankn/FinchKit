@@ -55,7 +55,7 @@ extension Player {
         
         // MARK: - Construction
         
-        init(context: Context, initialItem: Item) {
+        public init(context: Context, initialItem: Item) {
             current = initialItem
             self.context = context
         }
