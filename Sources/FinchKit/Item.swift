@@ -29,6 +29,10 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     public let albumId: Int?
     private(set) var offlineFilename: String?
     
+    public var artistsDescription: String {
+        !artists.isEmpty ? artists : artist
+    }
+    
     public var durationDescription: String {
         duration.formatted(Duration.TimeFormatStyle(pattern: (duration.seconds / 60) >= 60 ? .hourMinuteSecond : .minuteSecond))
     }

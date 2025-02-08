@@ -49,6 +49,13 @@ public actor Store {
         return offlineItems.map(Item.init)
     }
     
+    func getOfflineSingletons() throws -> [Item] {
+        let context = ModelContext(container)
+        
+        let offlineItems = try context.fetch(FetchDescriptor<OfflineItem>(predicate: #Predicate{ $0.albumId == nil }))
+        return offlineItems.map(Item.init)
+    }
+    
     func isAvailableOffline(_ item: Item) throws -> Bool {
         let context = ModelContext(container)
         let itemId = item.id

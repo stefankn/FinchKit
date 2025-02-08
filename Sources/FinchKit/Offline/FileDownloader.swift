@@ -71,8 +71,8 @@ public class FileDownloader: NSObject, URLSessionTaskDelegate {
         }
     }
     
-    public func download(_ item: Item, from album: Album) async throws -> Item {
-        if !(try await store.isAvailableOffline(album)) {
+    public func download(_ item: Item, from album: Album? = nil) async throws -> Item {
+        if let album, !(try await store.isAvailableOffline(album)) {
             try await store.createOfflineAlbum(for: album)
         }
         

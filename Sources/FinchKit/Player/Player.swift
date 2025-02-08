@@ -308,6 +308,8 @@ public final class Player {
             if artworkURL != self.artworkURL {
                 self.artworkURL = artworkURL
             }
+        case .singleton:
+            self.artworkURL = nil
         }
     }
     
@@ -361,6 +363,8 @@ public final class Player {
         switch queue.context {
         case .album(let album, _):
             info[MPMediaItemPropertyAlbumTitle] = album.title
+        case .singleton:
+            info[MPMediaItemPropertyAlbumTitle] = nil
         }
         
         if let imageData, let image = UIImage(data: imageData) {

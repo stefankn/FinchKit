@@ -14,10 +14,13 @@ extension Player {
         
         public enum Context: Codable, Sendable {
             case album(Album, items: [Item])
+            case singleton([Item])
             
             var items: [Item] {
                 switch self {
                 case .album(_, let items):
+                    return items
+                case .singleton(let items):
                     return items
                 }
             }
@@ -76,6 +79,8 @@ extension Player {
             switch context {
             case .album(let album, let items):
                 context = .album(album, items: items.map{ $0.id == item.id ? item : $0 })
+            case .singleton(let items):
+                context = .singleton(items.map{ $0.id == item.id ? item : $0 })
             }
         }
     }

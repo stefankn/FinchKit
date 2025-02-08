@@ -86,6 +86,17 @@ public actor FinchClient: Client {
         }
     }
     
+    public func getSingletons() async throws -> [Item] {
+        let offlineItems = try await store.getOfflineSingletons()
+        
+        if isOfflineModeEnabled {
+            return offlineItems.sorted()
+        } else {
+            let items: [ItemResponse] = try await get("/api/v1/items")
+            return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
+        }
+    }
+    
     @discardableResult public func getStats() async throws -> Stats {
         try await get("/api/v1/stats")
     }
