@@ -64,15 +64,34 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getAlbums(sorting: Sorting) async throws -> [Album] {
-        let offlineAlbums = try await store.getOfflineAlbums()
-        
+    public func getAlbums(sorting: Sorting, limit: Int) async throws -> Pager<Album> {
         if isOfflineModeEnabled {
-            return offlineAlbums
+            let offlineAlbums = try await store.getOfflineAlbums()
+            return Pager(items: offlineAlbums, total: offlineAlbums.count, limit: offlineAlbums.count, page: 1, sorting: sorting)
         } else {
-            let albums: [AlbumResponse] = try await get("/api/v1/albums", parameters: sorting.parameters)
-            return albums.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
+            var parameters = sorting.parameters
+            parameters += [
+                ("per", limit),
+                ("page", 1)
+            ]
+            
+            let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: parameters)
+            
+            return Pager(
+                items: try await map(response.items),
+                metadata: response.metadata,
+                sorting: sorting
+            )
         }
+    }
+    
+    public func getNextPage(_ pager: Pager<Album>) async throws -> Pager<Album> {
+        let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: pager.nextPageParameters)
+        
+        return pager.nextPage(
+            items: try await map(response.items),
+            metadata: response.metadata
+        )
     }
     
     public func getItems(for album: Album) async throws -> [Item] {
@@ -86,15 +105,34 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getSingletons(sorting: Sorting) async throws -> [Item] {
-        let offlineItems = try await store.getOfflineSingletons()
-        
+    public func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item> {
         if isOfflineModeEnabled {
-            return offlineItems.sorted()
+            let offlineItems = try await store.getOfflineSingletons()
+            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, sorting: sorting)
         } else {
-            let items: [ItemResponse] = try await get("/api/v1/items", parameters: sorting.parameters)
-            return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
+            var parameters = sorting.parameters
+            parameters += [
+                ("per", limit),
+                ("page", 1)
+            ]
+            
+            let response: Response<ItemResponse> = try await get("/api/v1/items", parameters: parameters)
+            
+            return Pager(
+                items: try await map(response.items),
+                metadata: response.metadata,
+                sorting: sorting
+            )
         }
+    }
+    
+    public func getNextPage(_ pager: Pager<Item>) async throws -> Pager<Item> {
+        let response: Response<ItemResponse> = try await get("/api/v1/items", parameters: pager.nextPageParameters)
+        
+        return pager.nextPage(
+            items: try await map(response.items),
+            metadata: response.metadata
+        )
     }
     
     @discardableResult public func getStats() async throws -> Stats {
@@ -120,6 +158,16 @@ public actor FinchClient: Client {
     
     
     // MARK: - Private Functions
+    
+    private func map(_ items: [AlbumResponse]) async throws -> [Album] {
+        let offlineAlbums = try await store.getOfflineAlbums()
+        return items.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
+    }
+    
+    private func map(_ items: [ItemResponse]) async throws -> [Item] {
+        let offlineItems = try await store.getOfflineSingletons()
+        return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }
+    }
     
     private func get<Response: Decodable>(_ path: String, parameters: Parameters? = nil, waitsForConnectivity: Bool = false) async throws -> Response {
         try await request(URLRequest(.get, url: url(for: path, parameters: parameters)), waitsForConnectivity: waitsForConnectivity)
