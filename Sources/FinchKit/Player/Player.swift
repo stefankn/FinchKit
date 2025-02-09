@@ -5,10 +5,14 @@
 //  Created by Stefan Klein Nulent on 26/01/2025.
 //
 
-import Foundation
 import Combine
 import MediaPlayer
 import Factory
+#if os(iOS)
+import UIKit
+#else
+import AppKit
+#endif
 
 @MainActor
 @Observable
@@ -67,11 +71,13 @@ public final class Player {
     public init(_ initialQueue: Queue? = nil) {
         player.actionAtItemEnd = .advance
         
+        #if os(iOS)
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, policy: .longFormAudio)
         } catch {
             assertionFailure("Failed to configure `AVAudioSession`: \(error.localizedDescription)")
         }
+        #endif
         
         setupRemoteControl()
         
@@ -367,10 +373,18 @@ public final class Player {
             info[MPMediaItemPropertyAlbumTitle] = nil
         }
         
+        #if os(iOS)
         if let imageData, let image = UIImage(data: imageData) {
             let artwork = MPMediaItemArtwork(boundsSize: image.size) { @Sendable _ in image }
             info[MPMediaItemPropertyArtwork] = artwork
         }
+        #else
+        if let imageData, let image = NSImage(data: imageData) {
+            let artwork = MPMediaItemArtwork(boundsSize: image.size) { @Sendable _ in image }
+            info[MPMediaItemPropertyArtwork] = artwork
+        }
+        #endif
+        
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
