@@ -181,6 +181,22 @@ public final class Player {
         return false
     }
     
+    public func seekBackward(_ duration: Duration) async {
+        guard isPlaying, let currentPlaybackPosition else { return }
+        
+        let updatedDuration = currentPlaybackPosition - duration
+        await seek(to: updatedDuration.seconds < 0 ? .zero : updatedDuration)
+    }
+    
+    public func seekForward(_ duration: Duration) async {
+        guard isPlaying, let currentPlaybackPosition, let currentDuration = queue?.current.duration else { return }
+        
+        let updatedDuration = currentPlaybackPosition + duration
+        if updatedDuration < currentDuration {
+            await seek(to: updatedDuration)
+        }
+    }
+    
     public func isPlaying(_ item: Item) -> Bool {
         queue?.current.id == item.id
     }
