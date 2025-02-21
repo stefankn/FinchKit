@@ -105,6 +105,12 @@ public actor FinchClient: Client {
         }
     }
     
+    public func getItems(for playlist: Playlist) async throws -> [Item] {
+        let items: [ItemResponse] = try await get("/api/v1/playlists/\(playlist.id)/items")
+        
+        return items.map(Item.init)
+    }
+    
     public func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item> {
         if isOfflineModeEnabled {
             let offlineItems = try await store.getOfflineSingletons()
@@ -153,6 +159,26 @@ public actor FinchClient: Client {
     
     public func streamURL(for item: Item) throws -> URL {
         try url(for: "/api/v1/items/\(item.id)/stream")
+    }
+    
+    public func getPlaylists() async throws -> [Playlist] {
+        try await get("/api/v1/playlists")
+    }
+    
+    public func createPlaylist(name: String, description: String?, items: [Item]?) async throws -> Playlist {
+        try await post("/api/v1/playlists", body: CreatePlaylist(
+            name: name,
+            description: description,
+            items: items?.map{ $0.id }
+        ))
+    }
+    
+    public func addItem(_ item: Item, to playlist: Playlist) async throws {
+        try await post("/api/v1/playlists/\(playlist.id)/items/\(item.id)")
+    }
+    
+    public func deleteItem(_ item: Item, from playlist: Playlist) async throws {
+        try await delete("/api/v1/playlists/\(playlist.id)/items/\(item.id)")
     }
     
     

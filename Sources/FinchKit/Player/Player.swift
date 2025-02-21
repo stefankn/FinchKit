@@ -229,20 +229,17 @@ public final class Player {
         // If the updated item is in the queue, update the player items
         guard queue.nextItems.contains(where: { $0.id == item.id }) else { return }
         
-        loadQueueTask?.cancel()
+        updatePlayerItems()
+    }
+    
+    public func delete(_ item: Item) {
+        guard let queue else { return }
         
-        for nextItem in queue.nextItems {
-            if let asset = assetMapping.first(where: { $0.item.id == nextItem.id }) {
-                assetMapping.remove(asset)
-                
-                if let playerItem = player.items().first(where: { $0.asset == asset.asset }) {
-                    player.remove(playerItem)
-                }
-            }
-        }
+        let isScheduled = queue.nextItems.contains(where: { $0.id == item.id })
+        self.queue?.delete(item)
         
-        loadQueueTask = Task {
-            await loadNextItems()
+        if isScheduled {
+            updatePlayerItems()
         }
     }
     
@@ -330,7 +327,7 @@ public final class Player {
             if artworkURL != self.artworkURL {
                 self.artworkURL = artworkURL
             }
-        case .singleton:
+        case .singleton, .playlist:
             self.artworkURL = nil
         }
     }
@@ -342,6 +339,26 @@ public final class Player {
             }
         } else {
             UserDefaults.standard.remove(for: .playbackPosition)
+        }
+    }
+    
+    private func updatePlayerItems() {
+        guard let queue else { return }
+        
+        loadQueueTask?.cancel()
+        
+        for nextItem in queue.nextItems {
+            if let asset = assetMapping.first(where: { $0.item.id == nextItem.id }) {
+                assetMapping.remove(asset)
+                
+                if let playerItem = player.items().first(where: { $0.asset == asset.asset }) {
+                    player.remove(playerItem)
+                }
+            }
+        }
+        
+        loadQueueTask = Task {
+            await loadNextItems()
         }
     }
     
@@ -385,7 +402,7 @@ public final class Player {
         switch queue.context {
         case .album(let album, _):
             info[MPMediaItemPropertyAlbumTitle] = album.title
-        case .singleton:
+        case .singleton, .playlist:
             info[MPMediaItemPropertyAlbumTitle] = nil
         }
         

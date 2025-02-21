@@ -14,11 +14,14 @@ extension Player {
         
         public enum Context: Codable, Sendable {
             case album(Album, items: [Item])
+            case playlist(Playlist, items: [Item])
             case singleton([Item])
             
             var items: [Item] {
                 switch self {
                 case .album(_, let items):
+                    return items
+                case .playlist(_, let items):
                     return items
                 case .singleton(let items):
                     return items
@@ -79,8 +82,23 @@ extension Player {
             switch context {
             case .album(let album, let items):
                 context = .album(album, items: items.map{ $0.id == item.id ? item : $0 })
+            case .playlist(let playlist, let items):
+                context = .playlist(playlist, items: items.map{ $0.id == item.id ? item : $0 })
             case .singleton(let items):
                 context = .singleton(items.map{ $0.id == item.id ? item : $0 })
+            }
+        }
+        
+        public mutating func delete(_ item: Item) {
+            guard context.items.contains(where: { $0.id == item.id }), item.id != current.id else { return }
+            
+            switch context {
+            case .album(let album, let items):
+                context = .album(album, items: items.filter{ $0.id != item.id })
+            case .playlist(let playlist, let items):
+                context = .playlist(playlist, items: items.filter{ $0.id != item.id })
+            case .singleton(let items):
+                context = .singleton(items.filter{ $0.id != item.id })
             }
         }
     }
