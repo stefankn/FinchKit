@@ -12,4 +12,5 @@ public enum AlbumType: String, Codable, Sendable {
     case compilation
     case djmix = "dj-mix"
     case live
+    case ep
 }
