@@ -12,6 +12,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     // MARK: - Properties
     
     public let id: Int
+    public let entryId: Int?
     public let track: Int?
     public let disc: Int?
     public let title: String
@@ -53,6 +54,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     
     public init(
         id: Int,
+        entryId: Int?,
         track: Int?,
         disc: Int?,
         title: String,
@@ -71,6 +73,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
         offlineFilename: String?
     ) {
         self.id = id
+        self.entryId = entryId
         self.track = track
         self.disc = disc
         self.title = title
@@ -89,8 +92,9 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
         self.offlineFilename = offlineFilename
     }
     
-    init(_ response: ItemResponse) {
+    init(_ response: ItemResponse, entryId: Int? = nil) {
         id = response.id
+        self.entryId = entryId
         track = response.track
         disc = response.disc
         title = response.title
@@ -111,6 +115,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     
     init(_ offlineItem: OfflineItem) {
         id = offlineItem.id
+        entryId = nil
         track = offlineItem.track
         disc = offlineItem.disc
         title = offlineItem.title

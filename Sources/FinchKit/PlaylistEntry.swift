@@ -31,6 +31,6 @@ public struct PlaylistEntry: Codable, Identifiable, Hashable, Sendable {
         id = playlistEntry.id
         index = playlistEntry.index
         createdAt = playlistEntry.createdAt
-        item = Item(playlistEntry.item)
+        item = Item(playlistEntry.item, entryId: playlistEntry.id)
     }
 }

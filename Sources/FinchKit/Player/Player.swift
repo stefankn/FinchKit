@@ -197,8 +197,17 @@ public final class Player {
         }
     }
     
-    public func isPlaying(_ item: Item) -> Bool {
-        queue?.current.id == item.id
+    public func isPlaying(_ item: Item, album: Album? = nil, playlist: Playlist? = nil) -> Bool {
+        guard let queue else { return false }
+        
+        switch queue.context {
+        case .album(let currentAlbum, _):
+            return album?.id == currentAlbum.id && queue.current.id == item.id
+        case .playlist(let currentPlaylist, _):
+            return playlist?.id == currentPlaylist.id && queue.current.entryId == item.entryId
+        case .singleton:
+            return album == nil && playlist == nil && queue.current.id == item.id
+        }
     }
     
     public func isAlbumLoaded(_ album: Album) -> Bool {
@@ -227,16 +236,21 @@ public final class Player {
         self.queue?.replace(item)
         
         // If the updated item is in the queue, update the player items
-        guard queue.nextItems.contains(where: { $0.id == item.id }) else { return }
+        switch queue.context {
+        case .album, .singleton:
+            guard queue.nextItems.contains(where: { $0.id == item.id }) else { return }
+        case .playlist:
+            guard queue.nextItems.contains(where: { $0.entryId == item.entryId }) else { return }
+        }
         
         updatePlayerItems()
     }
     
-    public func delete(_ item: Item) {
-        guard let queue else { return }
+    public func delete(_ entry: PlaylistEntry) {
+        guard let queue, case .playlist = queue.context else { return }
         
-        let isScheduled = queue.nextItems.contains(where: { $0.id == item.id })
-        self.queue?.delete(item)
+        let isScheduled = queue.nextItems.contains(where: { $0.id == entry.item.id })
+        self.queue?.delete(entry)
         
         if isScheduled {
             updatePlayerItems()

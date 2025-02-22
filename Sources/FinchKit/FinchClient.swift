@@ -101,7 +101,7 @@ public actor FinchClient: Client {
             return offlineItems.sorted()
         } else {
             let items: [ItemResponse] = try await get("/api/v1/albums/\(album.id)/items")
-            return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
+            return items.map{ Item($0) }.map{ item in offlineItems.first{ $0.id == item.id } ?? item }.sorted()
         }
     }
     
@@ -192,7 +192,7 @@ public actor FinchClient: Client {
     
     private func map(_ items: [ItemResponse]) async throws -> [Item] {
         let offlineItems = try await store.getOfflineSingletons()
-        return items.map(Item.init).map{ item in offlineItems.first{ $0.id == item.id } ?? item }
+        return items.map{ Item($0) }.map{ item in offlineItems.first{ $0.id == item.id } ?? item }
     }
     
     private func get<Response: Decodable>(_ path: String, parameters: Parameters? = nil, waitsForConnectivity: Bool = false) async throws -> Response {
