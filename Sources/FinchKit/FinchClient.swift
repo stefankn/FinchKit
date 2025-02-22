@@ -105,10 +105,10 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getItems(for playlist: Playlist) async throws -> [Item] {
-        let items: [ItemResponse] = try await get("/api/v1/playlists/\(playlist.id)/items")
+    public func getEntries(for playlist: Playlist) async throws -> [PlaylistEntry] {
+        let entries: [PlaylistEntryResponse] = try await get("/api/v1/playlists/\(playlist.id)/entries")
         
-        return items.map(Item.init)
+        return entries.map(PlaylistEntry.init)
     }
     
     public func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item> {
@@ -173,12 +173,12 @@ public actor FinchClient: Client {
         ))
     }
     
-    public func addItem(_ item: Item, to playlist: Playlist) async throws {
-        try await post("/api/v1/playlists/\(playlist.id)/items/\(item.id)")
+    public func add(_ item: Item, to playlist: Playlist) async throws {
+        try await post("/api/v1/playlists/\(playlist.id)/entries", body: CreatePlaylistEntry(itemId: item.id))
     }
     
-    public func deleteItem(_ item: Item, from playlist: Playlist) async throws {
-        try await delete("/api/v1/playlists/\(playlist.id)/items/\(item.id)")
+    public func delete(_ entry: PlaylistEntry, from playlist: Playlist) async throws {
+        try await delete("/api/v1/playlists/\(playlist.id)/entries/\(entry.id)")
     }
     
     
