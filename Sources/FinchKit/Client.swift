@@ -29,6 +29,7 @@ public protocol Client: Actor {
     func getStats() async throws -> Stats
     func getPlaylists() async throws -> [Playlist]
     func createPlaylist(name: String, description: String?, items: [Item]?) async throws -> Playlist
-    func add(_ item: Item, to playlist: Playlist) async throws
+    func delete(_ playlist: Playlist) async throws
+    func add(_ item: Item, to playlist: Playlist) async throws -> PlaylistEntry
     func delete(_ entry: PlaylistEntry, from playlist: Playlist) async throws
 }

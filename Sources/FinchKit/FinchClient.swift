@@ -173,8 +173,13 @@ public actor FinchClient: Client {
         ))
     }
     
-    public func add(_ item: Item, to playlist: Playlist) async throws {
-        try await post("/api/v1/playlists/\(playlist.id)/entries", body: CreatePlaylistEntry(itemId: item.id))
+    public func delete(_ playlist: Playlist) async throws {
+        try await delete("/api/v1/playlists/\(playlist.id)")
+    }
+    
+    public func add(_ item: Item, to playlist: Playlist) async throws -> PlaylistEntry {
+        let entry: PlaylistEntryResponse = try await post("/api/v1/playlists/\(playlist.id)/entries", body: CreatePlaylistEntry(itemId: item.id))
+        return PlaylistEntry(entry)
     }
     
     public func delete(_ entry: PlaylistEntry, from playlist: Playlist) async throws {

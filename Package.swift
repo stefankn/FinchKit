@@ -16,12 +16,16 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/hmlongco/Factory.git", from: "2.4.3")
+        .package(url: "https://github.com/hmlongco/Factory.git", from: "2.4.3"),
+        .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "1.0.0")
     ],
     targets: [
         .target(
             name: "FinchKit",
-            dependencies: ["Factory"]
+            dependencies: [
+                .product(name: "Factory", package: "Factory"),
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
+            ]
         ),
         .testTarget(
             name: "FinchKitTests",
