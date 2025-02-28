@@ -64,12 +64,19 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getAlbums(sorting: Sorting, limit: Int) async throws -> Pager<Album> {
+    public func getAlbums(type: AlbumType?, sorting: Sorting, limit: Int) async throws -> Pager<Album> {
         if isOfflineModeEnabled {
             let offlineAlbums = try await store.getOfflineAlbums()
-            return Pager(items: offlineAlbums, total: offlineAlbums.count, limit: offlineAlbums.count, page: 1, sorting: sorting)
+            return Pager(items: offlineAlbums, total: offlineAlbums.count, limit: offlineAlbums.count, page: 1, type: type, sorting: sorting)
         } else {
             var parameters = sorting.parameters
+            
+            if let type {
+                parameters += [
+                    ("type", type.rawValue)
+                ]
+            }
+            
             parameters += [
                 ("per", limit),
                 ("page", 1)
@@ -80,6 +87,7 @@ public actor FinchClient: Client {
             return Pager(
                 items: try await map(response.items),
                 metadata: response.metadata,
+                type: type,
                 sorting: sorting
             )
         }
@@ -114,7 +122,7 @@ public actor FinchClient: Client {
     public func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item> {
         if isOfflineModeEnabled {
             let offlineItems = try await store.getOfflineSingletons()
-            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, sorting: sorting)
+            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, type: nil, sorting: sorting)
         } else {
             var parameters = sorting.parameters
             parameters += [
@@ -127,6 +135,7 @@ public actor FinchClient: Client {
             return Pager(
                 items: try await map(response.items),
                 metadata: response.metadata,
+                type: nil,
                 sorting: sorting
             )
         }

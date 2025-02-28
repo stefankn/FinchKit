@@ -14,4 +14,5 @@ public enum AlbumType: String, Codable, Sendable {
     case live
     case ep
     case soundtrack
+    case single
 }
