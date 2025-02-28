@@ -150,6 +150,15 @@ public actor FinchClient: Client {
         )
     }
     
+    public func path(for album: Album) async throws -> String {
+        let response: AlbumPathResponse = try await get("/api/v1/albums/\(album.id)/path")
+        return response.path
+    }
+    
+    public func delete(_ album: Album, deleteFiles: Bool) async throws {
+        try await delete("/api/v1/albums/\(album.id)", body: DeleteAlbum(deleteFiles: deleteFiles))
+    }
+    
     @discardableResult public func getStats() async throws -> Stats {
         try await get("/api/v1/stats")
     }

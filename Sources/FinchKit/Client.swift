@@ -23,6 +23,8 @@ public protocol Client: Actor {
     func getEntries(for playlist: Playlist) async throws -> [PlaylistEntry]
     func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item>
     func getNextPage(_ pager: Pager<Item>) async throws -> Pager<Item>
+    func path(for album: Album) async throws -> String
+    func delete(_ album: Album, deleteFiles: Bool) async throws
     func artworkURL(for album: Album) -> URL?
     func artworkThumbnailURL(for album: Album) -> URL?
     func streamURL(for item: Item) throws -> URL
