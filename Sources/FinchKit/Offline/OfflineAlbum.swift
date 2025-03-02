@@ -26,6 +26,9 @@ import SwiftData
     var isArtworkAvailable: Bool
     var addedAt: Date
     var media: String?
+    var catalogNumber: String?
+    var barcode: String?
+    var asin: String?
     
     @Relationship(deleteRule: .cascade, inverse: \OfflineItem.album) var items: [OfflineItem]?
     
@@ -47,6 +50,9 @@ import SwiftData
         isArtworkAvailable = album.isArtworkAvailable
         addedAt = album.addedAt
         media = album.media
+        catalogNumber = album.catalogNumber
+        barcode = album.barcode
+        asin = album.asin
         items = []
     }
 }

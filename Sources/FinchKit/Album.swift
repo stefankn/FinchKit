@@ -24,6 +24,9 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
     public let isArtworkAvailable: Bool
     public let addedAt: Date
     public let media: String?
+    public let catalogNumber: String?
+    public let barcode: String?
+    public let asin: String?
     public let isOfflineAvailable: Bool
     
     
@@ -44,6 +47,9 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         isArtworkAvailable: Bool,
         addedAt: Date,
         media: String?,
+        catalogNumber: String?,
+        barcode: String?,
+        asin: String?,
         isOfflineAvailable: Bool
     ) {
         self.id = id
@@ -59,6 +65,9 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         self.isArtworkAvailable = isArtworkAvailable
         self.addedAt = addedAt
         self.media = media
+        self.catalogNumber = catalogNumber
+        self.barcode = barcode
+        self.asin = asin
         self.isOfflineAvailable = isOfflineAvailable
     }
     
@@ -76,6 +85,9 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         isArtworkAvailable = response.isArtworkAvailable
         addedAt = response.addedAt
         media = response.media
+        catalogNumber = response.catalogNumber
+        barcode = response.barcode
+        asin = response.asin
         isOfflineAvailable = false
     }
     
@@ -93,6 +105,9 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         isArtworkAvailable = album.isArtworkAvailable
         addedAt = album.addedAt
         media = album.media
+        catalogNumber = album.catalogNumber
+        barcode = album.barcode
+        asin = album.asin
         isOfflineAvailable = true
     }
 }

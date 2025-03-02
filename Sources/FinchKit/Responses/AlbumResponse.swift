@@ -25,6 +25,9 @@ struct AlbumResponse: Codable {
         case isArtworkAvailable = "is_artwork_available"
         case addedAt = "added_at"
         case media
+        case catalogNumber = "catalog_number"
+        case barcode
+        case asin
     }
     
     
@@ -44,4 +47,7 @@ struct AlbumResponse: Codable {
     let isArtworkAvailable: Bool
     let addedAt: Date
     let media: String?
+    let catalogNumber: String?
+    let barcode: String?
+    let asin: String?
 }
