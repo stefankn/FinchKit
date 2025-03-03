@@ -268,7 +268,7 @@ public final class Player {
             UserDefaults.standard.remove(for: .playbackPosition)
         }
         
-        loadQueueTask = Task {
+        Task {
             await refreshArtworkURL()
             await load(queue.current)
             
@@ -279,25 +279,22 @@ public final class Player {
             if autoplay {
                 play()
             }
-            
-            await loadNextItems()
         }
     }
     
-    private func loadNextItems() async {
-        guard let queue else { return }
+    private func loadNextItem() {
+        guard let nextItem = queue?.nextItems.first else { return }
         
-        for item in queue.nextItems where !Task.isCancelled {
-            await load(item)
-        }
+        loadQueueTask = Task.detached{ await self.load(nextItem) }
     }
     
     private func playerItemUpdated(_ playerItem: AVPlayerItem?) {
         guard let item = item(for: playerItem) else { return }
         
-        print("item update, url: \((playerItem?.asset as? AVURLAsset)?.url)")
+        print("item update, \(item.artists) - \(item.title)")
         
         queue?.select(item)
+        loadNextItem()
     }
     
     private func item(for playerItem: AVPlayerItem?) -> Item? {
@@ -371,9 +368,7 @@ public final class Player {
             }
         }
         
-        loadQueueTask = Task {
-            await loadNextItems()
-        }
+        loadNextItem()
     }
     
     private func updateInfoCenter() async {
