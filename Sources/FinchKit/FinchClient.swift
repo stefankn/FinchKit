@@ -119,12 +119,19 @@ public actor FinchClient: Client {
         return entries.map(PlaylistEntry.init)
     }
     
-    public func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item> {
+    public func getSingletons(type: AlbumType?, sorting: Sorting, limit: Int) async throws -> Pager<Item> {
         if isOfflineModeEnabled {
             let offlineItems = try await store.getOfflineSingletons()
-            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, type: nil, sorting: sorting)
+            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, type: type, sorting: sorting)
         } else {
             var parameters = sorting.parameters
+            
+            if let type {
+                parameters += [
+                    ("type", type.rawValue)
+                ]
+            }
+            
             parameters += [
                 ("per", limit),
                 ("page", 1)

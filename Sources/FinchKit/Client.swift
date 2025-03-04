@@ -21,7 +21,7 @@ public protocol Client: Actor {
     func getNextPage(_ pager: Pager<Album>) async throws -> Pager<Album>
     func getItems(for album: Album) async throws -> [Item]
     func getEntries(for playlist: Playlist) async throws -> [PlaylistEntry]
-    func getSingletons(sorting: Sorting, limit: Int) async throws -> Pager<Item>
+    func getSingletons(type: AlbumType?, sorting: Sorting, limit: Int) async throws -> Pager<Item>
     func getNextPage(_ pager: Pager<Item>) async throws -> Pager<Item>
     func path(for album: Album) async throws -> String
     func delete(_ album: Album, deleteFiles: Bool) async throws
