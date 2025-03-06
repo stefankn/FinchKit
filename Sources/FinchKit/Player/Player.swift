@@ -70,6 +70,7 @@ public final class Player {
     
     public init(_ initialQueue: Queue? = nil) {
         player.actionAtItemEnd = .advance
+        player.automaticallyWaitsToMinimizeStalling = false
         
         #if os(iOS)
         do {
