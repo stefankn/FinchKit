@@ -50,6 +50,8 @@ public final class PlaylistViewModel {
             switch event {
             case .added(let entry):
                 entries.append(entry)
+            case .removed(let entry):
+                entries.removeAll { $0.id == entry.id }
             }
         }
         
@@ -67,5 +69,19 @@ public final class PlaylistViewModel {
         }
         
         isLoading = false
+    }
+    
+    public func entry(for id: PlaylistEntry.ID) -> PlaylistEntry? {
+        entries.first(where: { $0.id == id })
+    }
+    
+    public func remove(_ entry: PlaylistEntry) async throws {
+        do {
+            try await finchClient.delete(entry, from: playlist)
+            await playlistEventCenter.broadcast(.removed(entry), for: playlist)
+        } catch {
+            try await loadEntries()
+            throw error
+        }
     }
 }

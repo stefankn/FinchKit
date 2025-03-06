@@ -9,4 +9,5 @@ import Foundation
 
 public enum PlaylistEvent: Sendable {
     case added(PlaylistEntry)
+    case removed(PlaylistEntry)
 }
