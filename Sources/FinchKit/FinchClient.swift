@@ -211,6 +211,11 @@ public actor FinchClient: Client {
         try await delete("/api/v1/playlists/\(playlist.id)/entries/\(entry.id)")
     }
     
+    public func update(_ item: Item, artist: String, artists: String, title: String) async throws -> Item {
+        let response: ItemResponse = try await put("/api/v1/items/\(item.id)", body: UpdateItem(artist: artist, artists: artists, title: title))
+        return Item(response)
+    }
+    
     
     
     // MARK: - Private Functions
@@ -239,6 +244,10 @@ public actor FinchClient: Client {
     
     private func post(_ path: String, parameters: Parameters? = nil) async throws {
         try await request(URLRequest(.post, url: url(for: path, parameters: parameters)))
+    }
+    
+    private func put<Body: Encodable, Response: Decodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws -> Response {
+        try await request(URLRequest(.put, url: url(for: path, parameters: parameters)), body: body)
     }
     
     private func delete<Body: Encodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws {

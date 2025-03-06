@@ -31,7 +31,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     private(set) var offlineFilename: String?
     
     public var artistsDescription: String {
-        !artists.isEmpty ? artists : artist
+        !artist.isEmpty ? artist : artists
     }
     
     public var durationDescription: String {
