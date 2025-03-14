@@ -34,3 +34,14 @@ public struct PlaylistEntry: Codable, Identifiable, Hashable, Sendable {
         item = Item(playlistEntry.item, entryId: playlistEntry.id)
     }
 }
+
+extension PlaylistEntry: FuzzySearchable {
+    
+    // MARK: - Properties
+    
+    // MARK: FuzzySearchable Properties
+    
+    public var searchableString: String {
+        item.artist + item.title
+    }
+}
