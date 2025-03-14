@@ -22,6 +22,7 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
     public let discCount: Int
     public let label: String?
     public let isArtworkAvailable: Bool
+    public let artworkPath: String?
     public let addedAt: Date
     public let media: String?
     public let catalogNumber: String?
@@ -45,6 +46,7 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         discCount: Int,
         label: String?,
         isArtworkAvailable: Bool,
+        artworkPath: String?,
         addedAt: Date,
         media: String?,
         catalogNumber: String?,
@@ -63,6 +65,7 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         self.discCount = discCount
         self.label = label
         self.isArtworkAvailable = isArtworkAvailable
+        self.artworkPath = artworkPath
         self.addedAt = addedAt
         self.media = media
         self.catalogNumber = catalogNumber
@@ -83,6 +86,7 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         discCount = response.discCount
         label = response.label
         isArtworkAvailable = response.isArtworkAvailable
+        artworkPath = response.artworkPath
         addedAt = response.addedAt
         media = response.media
         catalogNumber = response.catalogNumber
@@ -103,6 +107,7 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         discCount = album.discCount
         label = album.label
         isArtworkAvailable = album.isArtworkAvailable
+        artworkPath = album.artworkPath
         addedAt = album.addedAt
         media = album.media
         catalogNumber = album.catalogNumber

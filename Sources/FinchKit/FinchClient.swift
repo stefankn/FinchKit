@@ -216,6 +216,11 @@ public actor FinchClient: Client {
         return Item(response)
     }
     
+    public func update(_ album: Album, artist: String, title: String, artworkPath: String?) async throws -> Album {
+        let response: AlbumResponse = try await put("/api/v1/albums/\(album.id)", body: UpdateAlbum(artist: artist, title: title, artworkPath: artworkPath))
+        return Album(response)
+    }
+    
     
     
     // MARK: - Private Functions

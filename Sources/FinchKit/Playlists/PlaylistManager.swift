@@ -24,7 +24,7 @@ public final class PlaylistManager {
     
     // MARK: - Properties
     
-    public private(set) var playlists: [Playlist] = []
+    public var playlists: [Playlist] = []
     
     
     

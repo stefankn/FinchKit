@@ -24,6 +24,7 @@ import SwiftData
     var discCount: Int
     var label: String?
     var isArtworkAvailable: Bool
+    var artworkPath: String?
     var addedAt: Date
     var media: String?
     var catalogNumber: String?
@@ -48,6 +49,7 @@ import SwiftData
         discCount = album.discCount
         label = album.label
         isArtworkAvailable = album.isArtworkAvailable
+        artworkPath = album.artworkPath
         addedAt = album.addedAt
         media = album.media
         catalogNumber = album.catalogNumber

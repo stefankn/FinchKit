@@ -20,7 +20,7 @@ public final class PlaylistViewModel {
     @ObservationIgnored
     @Injected(\.playlistEventCenter) private var playlistEventCenter
     
-    private var subscription: PlaylistEventCenter.Subscription?
+    private var task: Task<Void, Never>?
     
     
     
@@ -44,18 +44,20 @@ public final class PlaylistViewModel {
     // MARK: - Functions
     
     public func observeEvents() async {
+        guard task == nil else { return }
+        
         let subscription = await playlistEventCenter.observe(playlist)
         
-        for await event in subscription.events {
-            switch event {
-            case .added(let entry):
-                entries.append(entry)
-            case .removed(let entry):
-                entries.removeAll { $0.id == entry.id }
+        task = Task {
+            for await event in subscription.events where !Task.isCancelled {
+                switch event {
+                case .added(let entry):
+                    entries.append(entry)
+                case .removed(let entry):
+                    entries.removeAll { $0.id == entry.id }
+                }
             }
         }
-        
-        self.subscription = subscription
     }
     
     public func loadEntries() async throws {
