@@ -221,6 +221,10 @@ public actor FinchClient: Client {
         return Album(response)
     }
     
+    public func delete(_ item: Item) async throws {
+        try await delete("/api/v1/items/\(item.id)")
+    }
+    
     
     
     // MARK: - Private Functions

@@ -36,4 +36,5 @@ public protocol Client: Actor {
     func delete(_ entry: PlaylistEntry, from playlist: Playlist) async throws
     func update(_ item: Item, artist: String, artists: String, title: String) async throws -> Item
     func update(_ album: Album, artist: String, title: String, artworkPath: String?) async throws -> Album
+    func delete(_ item: Item) async throws
 }
