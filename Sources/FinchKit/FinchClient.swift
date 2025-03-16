@@ -64,20 +64,15 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getAlbums(type: AlbumType?, sorting: Sorting, limit: Int) async throws -> Pager<Album> {
+    public func getAlbums(type: AlbumType, sorting: Sorting, limit: Int) async throws -> Pager<Album> {
         if isOfflineModeEnabled {
-            let offlineAlbums = try await store.getOfflineAlbums()
+            let offlineAlbums = try await store.getOfflineAlbums(type: type)
             return Pager(items: offlineAlbums, total: offlineAlbums.count, limit: offlineAlbums.count, page: 1, type: type, sorting: sorting)
         } else {
             var parameters = sorting.parameters
-            
-            if let type {
-                parameters += [
-                    ("type", type.rawValue)
-                ]
-            }
-            
+
             parameters += [
+                ("type", type.rawValue),
                 ("per", limit),
                 ("page", 1)
             ]
@@ -85,7 +80,7 @@ public actor FinchClient: Client {
             let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: parameters)
             
             return Pager(
-                items: try await map(response.items),
+                items: try await map(response.items, type: type),
                 metadata: response.metadata,
                 type: type,
                 sorting: sorting
@@ -97,7 +92,7 @@ public actor FinchClient: Client {
         let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: pager.nextPageParameters)
         
         return pager.nextPage(
-            items: try await map(response.items),
+            items: try await map(response.items, type: pager.type ?? .album),
             metadata: response.metadata
         )
     }
@@ -229,8 +224,8 @@ public actor FinchClient: Client {
     
     // MARK: - Private Functions
     
-    private func map(_ items: [AlbumResponse]) async throws -> [Album] {
-        let offlineAlbums = try await store.getOfflineAlbums()
+    private func map(_ items: [AlbumResponse], type: AlbumType) async throws -> [Album] {
+        let offlineAlbums = try await store.getOfflineAlbums(type: type)
         return items.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
     }
     
