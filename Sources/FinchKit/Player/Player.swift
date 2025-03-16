@@ -283,10 +283,19 @@ public final class Player {
         }
     }
     
-    private func loadNextItem() {
-        guard let nextItem = queue?.nextItems.first else { return }
+    private func loadNext() {
+        guard let queue, let nextItem = queue.nextItems.first else { return }
         
+        #if os(iOS)
+        loadQueueTask = Task.detached {
+            for item in queue.nextItems {
+                await self.load(item)
+            }
+        }
+        #else
+        guard let nextItem = queue.nextItems.first else { return }
         loadQueueTask = Task.detached{ await self.load(nextItem) }
+        #endif
     }
     
     private func playerItemUpdated(_ playerItem: AVPlayerItem?) {
@@ -295,7 +304,7 @@ public final class Player {
         print("item update, \(item.artists) - \(item.title)")
         
         queue?.select(item)
-        loadNextItem()
+        loadNext()
     }
     
     private func item(for playerItem: AVPlayerItem?) -> Item? {
@@ -369,7 +378,7 @@ public final class Player {
             }
         }
         
-        loadNextItem()
+        loadNext()
     }
     
     private func updateInfoCenter() async {
