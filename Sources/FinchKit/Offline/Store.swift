@@ -34,10 +34,11 @@ public actor Store {
     
     // MARK: - Functions
     
-    func getOfflineAlbums(type: AlbumType) throws -> [Album] {
+    func getOfflineAlbums(filter: AlbumFilter) throws -> [Album] {
         let context = ModelContext(container)
+        let filterRawValue = filter.rawValue
         
-        let offlineAlbums = try context.fetch(FetchDescriptor<OfflineAlbum>(predicate: #Predicate{ $0.type == type.rawValue }))
+        let offlineAlbums = try context.fetch(FetchDescriptor<OfflineAlbum>(predicate: #Predicate{ $0.filter == filterRawValue }))
         return offlineAlbums.map(Album.init)
     }
     

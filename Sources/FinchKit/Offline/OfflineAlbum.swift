@@ -17,9 +17,10 @@ import SwiftData
     var title: String
     var artist: String
     var artistSortKey: String
+    var filter: String
     var type: String
-    var types: String
     var genre: String?
+    var style: String?
     var year: Int
     var discCount: Int
     var label: String?
@@ -30,6 +31,9 @@ import SwiftData
     var catalogNumber: String?
     var barcode: String?
     var asin: String?
+    var discogsAlbumId: Int?
+    var discogsArtistId: Int?
+    var discogsLabelId: Int?
     
     @Relationship(deleteRule: .cascade, inverse: \OfflineItem.album) var items: [OfflineItem]?
     
@@ -42,9 +46,10 @@ import SwiftData
         title = album.title
         artist = album.artist
         artistSortKey = album.artistSortKey
-        type = album.type.rawValue
-        types = album.types.map{ $0.rawValue }.joined(separator: ",")
+        filter = album.filter.rawValue
+        type = album.type
         genre = album.genre
+        style = album.style
         year = album.year
         discCount = album.discCount
         label = album.label
@@ -55,6 +60,9 @@ import SwiftData
         catalogNumber = album.catalogNumber
         barcode = album.barcode
         asin = album.asin
+        discogsAlbumId = album.discogsAlbumId
+        discogsArtistId = album.discogsArtistId
+        discogsLabelId = album.discogsLabelId
         items = []
     }
 }

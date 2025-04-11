@@ -7,15 +7,15 @@
 
 import Foundation
 
-public struct Pager<T: Decodable>: Sendable where T: Sendable, T: Identifiable {
+public struct Pager<Element: Decodable, Filter>: Sendable where Element: Sendable, Element: Identifiable, Filter: RawRepresentable, Filter: Sendable, Filter.RawValue == String {
     
     // MARK: - Properties
     
-    public let items: [T]
+    public let items: [Element]
     public let total: Int
     public let limit: Int
     public let page: Int
-    public let type: AlbumType?
+    public let filter: Filter?
     public let sorting: Sorting
     
     public var isLastPage: Bool {
@@ -25,9 +25,9 @@ public struct Pager<T: Decodable>: Sendable where T: Sendable, T: Identifiable {
     var nextPageParameters: FinchClient.Parameters {
         var parameters = sorting.parameters
         
-        if let type {
+        if let filter {
             parameters += [
-                ("type", type.rawValue)
+                ("filter", filter.rawValue)
             ]
         }
         
@@ -43,23 +43,23 @@ public struct Pager<T: Decodable>: Sendable where T: Sendable, T: Identifiable {
     
     // MARK: - Construction
     
-    public init(items: [T], total: Int, limit: Int, page: Int, type: AlbumType?, sorting: Sorting) {
+    public init(items: [Element], total: Int, limit: Int, page: Int, filter: Filter?, sorting: Sorting) {
         self.items = items
         self.total = total
         self.limit = limit
         self.page = page
-        self.type = type
+        self.filter = filter
         self.sorting = sorting
     }
     
-    init(items: [T], metadata: Metadata, type: AlbumType?, sorting: Sorting) {
+    init(items: [Element], metadata: Metadata, filter: Filter?, sorting: Sorting) {
         self.items = items
         
         total = metadata.total
         limit = metadata.per
         page = metadata.page
         
-        self.type = type
+        self.filter = filter
         self.sorting = sorting
     }
     
@@ -67,20 +67,20 @@ public struct Pager<T: Decodable>: Sendable where T: Sendable, T: Identifiable {
     
     // MARK: - Functions
     
-    public func filter(_ isIncluded: (T) -> Bool) -> Pager<T> {
-        Pager(items: items.filter(isIncluded), total: total, limit: limit, page: page, type: type, sorting: sorting)
+    public func filter(_ isIncluded: (Element) -> Bool) -> Pager<Element, Filter> {
+        Pager(items: items.filter(isIncluded), total: total, limit: limit, page: page, filter: filter, sorting: sorting)
     }
     
-    public func map(_ transform: (T) -> T) -> Pager<T> {
-        Pager(items: items.map(transform), total: total, limit: limit, page: page, type: type, sorting: sorting)
+    public func map(_ transform: (Element) -> Element) -> Pager<Element, Filter> {
+        Pager(items: items.map(transform), total: total, limit: limit, page: page, filter: filter, sorting: sorting)
     }
     
-    public func isLast(_ item: T) -> Bool {
+    public func isLast(_ item: Element) -> Bool {
         item.id == items.last?.id
     }
     
-    func nextPage(items: [T], metadata: Metadata) -> Pager<T> {
-        Pager(items: self.items + items, metadata: metadata, type: type, sorting: sorting)
+    func nextPage(items: [Element], metadata: Metadata) -> Pager<Element, Filter> {
+        Pager(items: self.items + items, metadata: metadata, filter: filter, sorting: sorting)
     }
 }
 
@@ -90,7 +90,7 @@ extension Pager: ExpressibleByArrayLiteral {
     
     // MARK: ExpressibleByArrayLiteral
     
-    public init(arrayLiteral elements: T...) {
-        self.init(items: elements, total: elements.count, limit: elements.count, page: 1, type: nil, sorting: .added)
+    public init(arrayLiteral elements: Element...) {
+        self.init(items: elements, total: elements.count, limit: elements.count, page: 1, filter: nil, sorting: .added)
     }
 }

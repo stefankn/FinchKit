@@ -64,15 +64,15 @@ public actor FinchClient: Client {
         }
     }
     
-    public func getAlbums(type: AlbumType, sorting: Sorting, limit: Int) async throws -> Pager<Album> {
+    public func getAlbums(filter: AlbumFilter, sorting: Sorting, limit: Int) async throws -> Pager<Album, AlbumFilter> {
         if isOfflineModeEnabled {
-            let offlineAlbums = try await store.getOfflineAlbums(type: type)
-            return Pager(items: offlineAlbums, total: offlineAlbums.count, limit: offlineAlbums.count, page: 1, type: type, sorting: sorting)
+            let offlineAlbums = try await store.getOfflineAlbums(filter: filter)
+            return Pager(items: offlineAlbums, total: offlineAlbums.count, limit: offlineAlbums.count, page: 1, filter: filter, sorting: sorting)
         } else {
             var parameters = sorting.parameters
 
             parameters += [
-                ("type", type.rawValue),
+                ("filter", filter.rawValue),
                 ("per", limit),
                 ("page", 1)
             ]
@@ -80,19 +80,19 @@ public actor FinchClient: Client {
             let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: parameters)
             
             return Pager(
-                items: try await map(response.items, type: type),
+                items: try await map(response.items, filter: filter),
                 metadata: response.metadata,
-                type: type,
+                filter: filter,
                 sorting: sorting
             )
         }
     }
     
-    public func getNextPage(_ pager: Pager<Album>) async throws -> Pager<Album> {
+    public func getNextPage(_ pager: Pager<Album, AlbumFilter>) async throws -> Pager<Album, AlbumFilter> {
         let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: pager.nextPageParameters)
         
         return pager.nextPage(
-            items: try await map(response.items, type: pager.type ?? .album),
+            items: try await map(response.items, filter: pager.filter ?? .album),
             metadata: response.metadata
         )
     }
@@ -114,16 +114,16 @@ public actor FinchClient: Client {
         return entries.map(PlaylistEntry.init)
     }
     
-    public func getSingletons(type: AlbumType?, sorting: Sorting, limit: Int) async throws -> Pager<Item> {
+    public func getSingletons(filter: SingletonFilter?, sorting: Sorting, limit: Int) async throws -> Pager<Item, SingletonFilter> {
         if isOfflineModeEnabled {
             let offlineItems = try await store.getOfflineSingletons()
-            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, type: type, sorting: sorting)
+            return Pager(items: offlineItems, total: offlineItems.count, limit: offlineItems.count, page: 1, filter: filter, sorting: sorting)
         } else {
             var parameters = sorting.parameters
             
-            if let type {
+            if let filter {
                 parameters += [
-                    ("type", type.rawValue)
+                    ("filter", filter.rawValue)
                 ]
             }
             
@@ -137,13 +137,13 @@ public actor FinchClient: Client {
             return Pager(
                 items: try await map(response.items),
                 metadata: response.metadata,
-                type: nil,
+                filter: filter,
                 sorting: sorting
             )
         }
     }
     
-    public func getNextPage(_ pager: Pager<Item>) async throws -> Pager<Item> {
+    public func getNextPage(_ pager: Pager<Item, SingletonFilter>) async throws -> Pager<Item, SingletonFilter> {
         let response: Response<ItemResponse> = try await get("/api/v1/items", parameters: pager.nextPageParameters)
         
         return pager.nextPage(
@@ -213,7 +213,7 @@ public actor FinchClient: Client {
     
     public func update(_ album: Album, artist: String, title: String, artworkPath: String?) async throws -> Album {
         let response: AlbumResponse = try await put("/api/v1/albums/\(album.id)", body: UpdateAlbum(artist: artist, title: title, artworkPath: artworkPath))
-        return Album(response)
+        return Album(response, filter: album.filter)
     }
     
     public func delete(_ item: Item) async throws {
@@ -224,9 +224,9 @@ public actor FinchClient: Client {
     
     // MARK: - Private Functions
     
-    private func map(_ items: [AlbumResponse], type: AlbumType) async throws -> [Album] {
-        let offlineAlbums = try await store.getOfflineAlbums(type: type)
-        return items.map(Album.init).map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
+    private func map(_ items: [AlbumResponse], filter: AlbumFilter) async throws -> [Album] {
+        let offlineAlbums = try await store.getOfflineAlbums(filter: filter)
+        return items.map{ Album($0, filter: filter) }.map{ album in offlineAlbums.first{ $0.id == album.id } ?? album }
     }
     
     private func map(_ items: [ItemResponse]) async throws -> [Item] {

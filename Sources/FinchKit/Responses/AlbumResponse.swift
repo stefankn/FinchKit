@@ -17,8 +17,8 @@ struct AlbumResponse: Codable {
         case artist
         case artistSortKey = "artist_sort_key"
         case type
-        case types
         case genre
+        case style
         case year
         case discCount = "disc_count"
         case label
@@ -29,6 +29,9 @@ struct AlbumResponse: Codable {
         case catalogNumber = "catalog_number"
         case barcode
         case asin
+        case discogsAlbumId = "discogs_album_id"
+        case discogsArtistId = "discogs_artist_id"
+        case discogsLabelId = "discogs_label_id"
     }
     
     
@@ -39,9 +42,9 @@ struct AlbumResponse: Codable {
     let title: String
     let artist: String
     let artistSortKey: String
-    let type: AlbumType
-    let types: [AlbumType]
+    let type: String
     let genre: String?
+    let style: String?
     let year: Int
     let discCount: Int
     let label: String?
@@ -52,4 +55,7 @@ struct AlbumResponse: Codable {
     let catalogNumber: String?
     let barcode: String?
     let asin: String?
+    let discogsAlbumId: Int?
+    let discogsArtistId: Int?
+    let discogsLabelId: Int?
 }

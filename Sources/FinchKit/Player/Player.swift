@@ -284,7 +284,7 @@ public final class Player {
     }
     
     private func loadNext() {
-        guard let queue, let nextItem = queue.nextItems.first else { return }
+        guard let queue else { return }
         
         #if os(iOS)
         loadQueueTask = Task.detached {

@@ -17,12 +17,12 @@ public protocol Client: Actor {
     // MARK: - Functions
     
     func connect(to url: URL) async throws
-    func getAlbums(type: AlbumType, sorting: Sorting, limit: Int) async throws -> Pager<Album>
-    func getNextPage(_ pager: Pager<Album>) async throws -> Pager<Album>
+    func getAlbums(filter: AlbumFilter, sorting: Sorting, limit: Int) async throws -> Pager<Album, AlbumFilter>
+    func getNextPage(_ pager: Pager<Album, AlbumFilter>) async throws -> Pager<Album, AlbumFilter>
     func getItems(for album: Album) async throws -> [Item]
     func getEntries(for playlist: Playlist) async throws -> [PlaylistEntry]
-    func getSingletons(type: AlbumType?, sorting: Sorting, limit: Int) async throws -> Pager<Item>
-    func getNextPage(_ pager: Pager<Item>) async throws -> Pager<Item>
+    func getSingletons(filter: SingletonFilter?, sorting: Sorting, limit: Int) async throws -> Pager<Item, SingletonFilter>
+    func getNextPage(_ pager: Pager<Item, SingletonFilter>) async throws -> Pager<Item, SingletonFilter>
     func path(for album: Album) async throws -> String
     func delete(_ album: Album, deleteFiles: Bool) async throws
     func artworkURL(for album: Album) -> URL?
