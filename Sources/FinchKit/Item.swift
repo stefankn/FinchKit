@@ -8,6 +8,14 @@
 import Foundation
 
 public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
+    
+    // MARK: - Private Properties
+    
+    private var sortIndex: Int {
+        (disc ?? 0) * 1000 + (track ?? 0)
+    }
+    
+    
 
     // MARK: - Properties
     
@@ -146,6 +154,6 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     // MARK: Comparable Functions
     
     public static func < (lhs: Item, rhs: Item) -> Bool {
-        lhs.track ?? 0 < rhs.track ?? 0
+        lhs.sortIndex < rhs.sortIndex
     }
 }
