@@ -17,7 +17,6 @@ struct ItemResponse: Codable {
         case disc
         case title
         case artist
-        case artists
         case length
         case format
         case bitrate
@@ -39,7 +38,6 @@ struct ItemResponse: Codable {
     let disc: Int?
     let title: String
     let artist: String
-    let artists: String
     let length: Double
     let format: String
     let bitrate: Int

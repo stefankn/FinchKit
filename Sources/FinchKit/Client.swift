@@ -18,6 +18,7 @@ public protocol Client: Actor {
     
     func connect(to url: URL) async throws
     func getAlbums(filter: AlbumFilter, sorting: Sorting, limit: Int) async throws -> Pager<Album, AlbumFilter>
+    func getAlbum(for id: Int) async throws -> Album
     func getNextPage(_ pager: Pager<Album, AlbumFilter>) async throws -> Pager<Album, AlbumFilter>
     func getItems(for album: Album) async throws -> [Item]
     func getEntries(for playlist: Playlist) async throws -> [PlaylistEntry]
@@ -30,11 +31,12 @@ public protocol Client: Actor {
     func streamURL(for item: Item) throws -> URL
     func getStats() async throws -> Stats
     func getPlaylists() async throws -> [Playlist]
+    func getPlaylist(for id: Int) async throws -> Playlist
     func createPlaylist(name: String, description: String?, items: [Item]?) async throws -> Playlist
     func delete(_ playlist: Playlist) async throws
     func add(_ item: Item, to playlist: Playlist) async throws -> PlaylistEntry
     func delete(_ entry: PlaylistEntry, from playlist: Playlist) async throws
-    func update(_ item: Item, artist: String, artists: String, title: String) async throws -> Item
+    func update(_ item: Item, artist: String, title: String) async throws -> Item
     func update(_ album: Album, artist: String, title: String, artworkPath: String?) async throws -> Album
     func delete(_ item: Item) async throws
 }

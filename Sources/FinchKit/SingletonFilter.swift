@@ -9,5 +9,5 @@ import Foundation
 
 public enum SingletonFilter: String, Sendable {
     case uncategorized
-    case djmix = "dj-mix"
+    case djmix
 }

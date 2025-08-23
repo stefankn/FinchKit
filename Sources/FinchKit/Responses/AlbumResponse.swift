@@ -15,7 +15,6 @@ struct AlbumResponse: Codable {
         case id
         case title
         case artist
-        case artistSortKey = "artist_sort_key"
         case type
         case genre
         case style
@@ -41,7 +40,6 @@ struct AlbumResponse: Codable {
     let id: Int
     let title: String
     let artist: String
-    let artistSortKey: String
     let type: String
     let genre: String?
     let style: String?

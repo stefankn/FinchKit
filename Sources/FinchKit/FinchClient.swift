@@ -88,6 +88,11 @@ public actor FinchClient: Client {
         }
     }
     
+    public func getAlbum(for id: Int) async throws -> Album {
+        let albumResponse: AlbumResponse = try await get("/api/v1/albums/\(id)")
+        return Album(albumResponse, filter: .album)
+    }
+    
     public func getNextPage(_ pager: Pager<Album, AlbumFilter>) async throws -> Pager<Album, AlbumFilter> {
         let response: Response<AlbumResponse> = try await get("/api/v1/albums", parameters: pager.nextPageParameters)
         
@@ -185,6 +190,10 @@ public actor FinchClient: Client {
         try await get("/api/v1/playlists")
     }
     
+    public func getPlaylist(for id: Int) async throws -> Playlist {
+        try await get("/api/v1/playlists/\(id)")
+    }
+    
     public func createPlaylist(name: String, description: String?, items: [Item]?) async throws -> Playlist {
         try await post("/api/v1/playlists", body: CreatePlaylist(
             name: name,
@@ -206,8 +215,8 @@ public actor FinchClient: Client {
         try await delete("/api/v1/playlists/\(playlist.id)/entries/\(entry.id)")
     }
     
-    public func update(_ item: Item, artist: String, artists: String, title: String) async throws -> Item {
-        let response: ItemResponse = try await put("/api/v1/items/\(item.id)", body: UpdateItem(artist: artist, artists: artists, title: title))
+    public func update(_ item: Item, artist: String, title: String) async throws -> Item {
+        let response: ItemResponse = try await put("/api/v1/items/\(item.id)", body: UpdateItem(artist: artist, title: title))
         return Item(response)
     }
     

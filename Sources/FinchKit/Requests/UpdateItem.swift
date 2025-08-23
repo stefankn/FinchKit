@@ -12,6 +12,5 @@ struct UpdateItem: Encodable {
     // MARK: - Properties
     
     let artist: String
-    let artists: String
     let title: String
 }

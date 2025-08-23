@@ -14,7 +14,6 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
     public let id: Int
     public let title: String
     public let artist: String
-    public let artistSortKey: String
     public let filter: AlbumFilter
     public let type: String
     public let genre: String?
@@ -48,7 +47,6 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         id: Int,
         title: String,
         artist: String,
-        artistSortKey: String,
         filter: AlbumFilter,
         type: String,
         genre: String?,
@@ -71,7 +69,6 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         self.id = id
         self.title = title
         self.artist = artist
-        self.artistSortKey = artistSortKey
         self.filter = filter
         self.type = type
         self.genre = genre
@@ -96,7 +93,6 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         id = response.id
         title = response.title
         artist = response.artist
-        artistSortKey = response.artistSortKey
         type = response.type
         genre = response.genre
         style = response.style
@@ -122,7 +118,6 @@ public struct Album: Codable, Identifiable, Hashable, Sendable {
         id = album.id
         title = album.title
         artist = album.artist
-        artistSortKey = album.artistSortKey
         filter = AlbumFilter(rawValue: album.filter) ?? .album
         type = album.type
         genre = album.genre

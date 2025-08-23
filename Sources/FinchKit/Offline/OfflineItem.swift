@@ -18,7 +18,6 @@ import SwiftData
     var disc: Int?
     var title: String
     var artist: String
-    var artists: String
     var duration: Double
     var format: String
     var bitrate: Int
@@ -44,7 +43,6 @@ import SwiftData
         disc = item.disc
         title = item.title
         artist = item.artist
-        artists = item.artists
         duration = item.duration.seconds
         format = item.format
         bitrate = item.bitrate

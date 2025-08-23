@@ -301,7 +301,7 @@ public final class Player {
     private func playerItemUpdated(_ playerItem: AVPlayerItem?) {
         guard let item = item(for: playerItem) else { return }
         
-        print("item update, \(item.artists) - \(item.title)")
+        print("item update, \(item.artist) - \(item.title)")
         
         queue?.select(item)
         loadNext()
@@ -411,7 +411,7 @@ public final class Player {
         guard let queue else { return }
         
         var info: [String: Any] = [
-            MPMediaItemPropertyArtist: item.artists,
+            MPMediaItemPropertyArtist: item.artist,
             MPMediaItemPropertyTitle: item.title,
             MPNowPlayingInfoPropertyElapsedPlaybackTime: player.currentItem?.currentTime().seconds ?? 0,
             MPMediaItemPropertyPlaybackDuration: item.duration.seconds,

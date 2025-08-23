@@ -16,7 +16,6 @@ import SwiftData
     
     var title: String
     var artist: String
-    var artistSortKey: String
     var filter: String
     var type: String
     var genre: String?
@@ -45,7 +44,6 @@ import SwiftData
         id = album.id
         title = album.title
         artist = album.artist
-        artistSortKey = album.artistSortKey
         filter = album.filter.rawValue
         type = album.type
         genre = album.genre

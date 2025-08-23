@@ -25,7 +25,6 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     public let disc: Int?
     public let title: String
     public let artist: String
-    public let artists: String
     public let duration: Duration
     public let format: String
     public let bitrate: Int
@@ -39,7 +38,7 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
     private(set) var offlineFilename: String?
     
     public var artistsDescription: String {
-        !artist.isEmpty ? artist : artists
+        artist
     }
     
     public var durationDescription: String {
@@ -67,7 +66,6 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
         disc: Int?,
         title: String,
         artist: String,
-        artists: String,
         duration: Duration,
         format: String,
         bitrate: Int,
@@ -86,7 +84,6 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
         self.disc = disc
         self.title = title
         self.artist = artist
-        self.artists = artists
         self.duration = duration
         self.format = format
         self.bitrate = bitrate
@@ -107,7 +104,6 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
         disc = response.disc
         title = response.title
         artist = response.artist
-        artists = response.artists
         duration = .seconds(response.length)
         format = response.format
         bitrate = response.bitrate
@@ -128,7 +124,6 @@ public struct Item: Codable, Hashable, Identifiable, Sendable, Comparable {
         disc = offlineItem.disc
         title = offlineItem.title
         artist = offlineItem.artist
-        artists = offlineItem.artists
         duration = .seconds(offlineItem.duration)
         format = offlineItem.format
         bitrate = offlineItem.bitrate
