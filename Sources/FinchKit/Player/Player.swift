@@ -8,6 +8,7 @@
 import Combine
 import MediaPlayer
 import Factory
+import FinchProtocol
 #if os(iOS)
 import UIKit
 #else
@@ -22,6 +23,9 @@ public final class Player {
     
     @ObservationIgnored
     @Injected(\.finchClient) private var finchClient
+    
+    @ObservationIgnored
+    @Injected(\.remoteControlServer) private var remoteControlServer
 
     private let player = AVQueuePlayer()
     private var assetMapping: Set<Asset> = []
@@ -101,6 +105,8 @@ public final class Player {
                 await storePlaybackPosition()
             }
         }
+        
+        startEventListener()
         
         if let initialQueue {
             queue = initialQueue
@@ -464,6 +470,72 @@ public final class Player {
         commandCenter.nextTrackCommand.addTarget { event in
             self.next()
             return .success
+        }
+    }
+    
+    private func startEventListener() {
+        Task {
+            do {
+                try await remoteControlServer.start { message in
+                    
+                    print("Received message: \(message)")
+                    
+                    switch message {
+                    case .nowPlayingInfo:
+                        let nowPlayingInfo = await NowPlayingInfo(artist: self.queue?.current.artist, title: self.queue?.current.title)
+                        let data = try JSONEncoder().encode(nowPlayingInfo)
+                        return data
+                    case .playPlaylist(let playlistId, let shuffle):
+                        let playlist = try await self.finchClient.getPlaylist(for: playlistId)
+                        var entries = try await self.finchClient.getEntries(for: playlist)
+                        if shuffle {
+                            entries = entries.shuffled()
+                        }
+                        
+                        let items = entries.map{ $0.item }
+                        if let item = items.first {
+                            await self.loadContext(.playlist(playlist, items: items), initialItem: item)
+                        }
+                        
+                        return nil
+                    case .playAlbum(let albumId, let shuffle):
+                        let album = try await self.finchClient.getAlbum(for: albumId)
+                        var items = try await self.finchClient.getItems(for: album)
+                        if shuffle {
+                            items = items.shuffled()
+                        }
+                        
+                        if let item = items.first {
+                            await self.loadContext(.album(album, items: items), initialItem: item)
+                        }
+                        
+                        return nil
+                    case .playPreviousTrack:
+                        await self.previous()
+                        let result = PlayResult.track(await NowPlayingInfo(artist: self.queue?.current.artist, title: self.queue?.current.title))
+                        return try JSONEncoder().encode(result)
+                    case .playNextTrack:
+                        let result: PlayResult
+                        if await self.queue?.nextItems.isEmpty == true {
+                            result = .unavailable("Current track is the last track in the queue")
+                        } else {
+                            await self.next()
+                            result = .track(await NowPlayingInfo(artist: self.queue?.current.artist, title: self.queue?.current.title))
+                        }
+                        
+                        return try JSONEncoder().encode(result)
+                    case .play:
+                        await self.play()
+                        let result = PlayResult.track(await NowPlayingInfo(artist: self.queue?.current.artist, title: self.queue?.current.title))
+                        return try JSONEncoder().encode(result)
+                    case .pause:
+                        await self.pause()
+                        return nil
+                    }
+                }
+            } catch {
+                print(error)
+            }
         }
     }
 }

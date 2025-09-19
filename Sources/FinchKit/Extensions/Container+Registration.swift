@@ -7,6 +7,7 @@
 
 import Foundation
 import Factory
+import FinchProtocol
 
 public extension Container {
     
@@ -22,5 +23,9 @@ public extension Container {
     
     var playlistEventCenter: Factory<PlaylistEventCenter> {
         Factory(self) { PlaylistEventCenter() }.singleton
+    }
+    
+    var remoteControlServer: Factory<Server> {
+        Factory(self) { Server() }.singleton
     }
 }
