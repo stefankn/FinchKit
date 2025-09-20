@@ -14,6 +14,7 @@ struct UpdateAlbum: Encodable {
     enum CodingKeys: String, CodingKey {
         case artist
         case title
+        case type
         case artworkPath = "artwork_path"
     }
     
@@ -23,15 +24,17 @@ struct UpdateAlbum: Encodable {
     
     let artist: String
     let title: String
+    let type: String
     let artworkPath: String?
     
     
     
     // MARK: - Construction
     
-    init(artist: String, title: String, artworkPath: String?) {
+    init(artist: String, title: String, type: String, artworkPath: String?) {
         self.artist = artist
         self.title = title
+        self.type = type
         
         let artworkPath = artworkPath?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let artworkPath, !artworkPath.isEmpty {
