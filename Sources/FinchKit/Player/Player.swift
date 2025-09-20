@@ -106,7 +106,9 @@ public final class Player {
             }
         }
         
+        #if os(macOS)
         startEventListener()
+        #endif
         
         if let initialQueue {
             queue = initialQueue
