@@ -51,8 +51,8 @@ public final class PlaylistViewModel {
         task = Task {
             for await event in subscription.events where !Task.isCancelled {
                 switch event {
-                case .added(let entry):
-                    entries.append(entry)
+                case .added(let newEntries):
+                    entries.append(contentsOf: newEntries)
                 case .removed(let entry):
                     entries.removeAll { $0.id == entry.id }
                 }

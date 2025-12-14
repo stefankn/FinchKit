@@ -12,12 +12,12 @@ struct CreatePlaylistEntry: Encodable {
     // MARK: - Types
     
     enum CodingKeys: String, CodingKey {
-        case itemId = "item_id"
+        case itemIds = "item_ids"
     }
     
     
     
     // MARK: - Properties
     
-    let itemId: Int
+    let itemIds: [Int]
 }

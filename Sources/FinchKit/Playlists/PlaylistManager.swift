@@ -40,11 +40,11 @@ public final class PlaylistManager {
         playlists = try await finchClient.getPlaylists()
     }
     
-    public func create(name: String, description: String, item: Item? = nil) async throws {
+    public func create(name: String, description: String, items: [Item]? = nil) async throws {
         let playlist = try await finchClient.createPlaylist(
             name: name,
             description: description.isEmpty ? nil : description,
-            items: [item].compactMap{ $0 }
+            items: items
         )
         
         playlists.append(playlist)
@@ -55,9 +55,9 @@ public final class PlaylistManager {
         playlists = playlists.filter{ $0.id != playlist.id }
     }
     
-    public func add(_ item: Item, to playlist: Playlist) async throws {
-        let entry = try await finchClient.add(item, to: playlist)
+    public func add(_ items: [Item], to playlist: Playlist) async throws {
+        let entries = try await finchClient.add(items, to: playlist)
         
-        await eventCenter.broadcast(.added(entry), for: playlist)
+        await eventCenter.broadcast(.added(entries), for: playlist)
     }
 }

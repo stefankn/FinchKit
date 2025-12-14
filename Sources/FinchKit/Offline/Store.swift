@@ -24,7 +24,9 @@ public actor Store {
         do {
             container = try ModelContainer(for: OfflineItem.self, configurations: configuration)
             
-            print(container.configurations.first?.url)
+            if let url = container.configurations.first?.url {
+                print("Store URL: \(url)")
+            }
         } catch {
             fatalError("Failed to create container, \(error)")
         }

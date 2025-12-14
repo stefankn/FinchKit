@@ -18,7 +18,7 @@ public extension Container {
     }
     
     var store: Factory<Store> {
-        Factory(self) { Store() }
+        Factory(self) { Store() }.singleton
     }
     
     var playlistEventCenter: Factory<PlaylistEventCenter> {

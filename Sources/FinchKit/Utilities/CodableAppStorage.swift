@@ -8,7 +8,7 @@
 import SwiftUI
 
 @propertyWrapper
-public struct CodableAppStorage<Value: Codable>: DynamicProperty, Sendable {
+public struct CodableAppStorage<Value: Codable & Sendable>: DynamicProperty, Sendable {
     
     // MARK: - Private Properties
     
