@@ -15,6 +15,7 @@ public struct Playlist: Codable, Identifiable, Sendable, Hashable {
         case id
         case name
         case description
+        case isArtworkAvailable = "is_artwork_available"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -26,6 +27,7 @@ public struct Playlist: Codable, Identifiable, Sendable, Hashable {
     public let id: Int
     public let name: String
     public let description: String?
+    public let isArtworkAvailable: Bool
     public let createdAt: Date
     public let updatedAt: Date
     
@@ -33,10 +35,11 @@ public struct Playlist: Codable, Identifiable, Sendable, Hashable {
     
     // MARK: - Construction
     
-    public init(id: Int, name: String, description: String?, createdAt: Date, updatedAt: Date) {
+    public init(id: Int, name: String, description: String?, isArtworkAvailable: Bool, createdAt: Date, updatedAt: Date) {
         self.id = id
         self.name = name
         self.description = description
+        self.isArtworkAvailable = isArtworkAvailable
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

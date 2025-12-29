@@ -86,4 +86,12 @@ public final class PlaylistViewModel {
             throw error
         }
     }
+    
+    public func uploadImage(_ data: Data) async {
+        do {
+            _ = try await finchClient.uploadImage(data, for: playlist)
+        } catch {
+            print(error)
+        }
+    }
 }

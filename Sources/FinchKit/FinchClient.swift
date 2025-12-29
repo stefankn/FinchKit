@@ -14,6 +14,7 @@ public actor FinchClient: Client {
     typealias Parameters = [(name: String, value: CustomStringConvertible)]
     
     
+    
     // MARK: - Private Properties
     
     private let store: Store
@@ -182,6 +183,12 @@ public actor FinchClient: Client {
         return try? url(for: "/api/v1/albums/\(album.id)/artwork/thumbnail")
     }
     
+    public func artworkURL(for playlist: Playlist) -> URL? {
+        guard playlist.isArtworkAvailable else { return nil }
+        
+        return try? url(for: "/api/v1/playlists/\(playlist.id)/image")
+    }
+    
     public func streamURL(for item: Item) throws -> URL {
         try url(for: "/api/v1/items/\(item.id)/stream")
     }
@@ -200,6 +207,13 @@ public actor FinchClient: Client {
             description: description,
             items: items?.map{ $0.id }
         ))
+    }
+    
+    public func uploadImage(_ imageData: Data, for playlist: Playlist) async throws -> Playlist {
+        var body = MultipartFormData()
+        body.add(key: "image", fileName: "image.jpg", mimeType: "image/jpeg", fileData: imageData)
+        
+        return try await put("/api/v1/playlists/\(playlist.id)/image", body: body)
     }
     
     public func delete(_ playlist: Playlist) async throws {
@@ -251,6 +265,10 @@ public actor FinchClient: Client {
         try await request(URLRequest(.post, url: url(for: path, parameters: parameters)), body: body)
     }
     
+    private func post<Response: Decodable>(_ path: String, parameters: Parameters? = nil, body: MultipartFormData) async throws -> Response {
+        try await request(URLRequest(.post, url: url(for: path, parameters: parameters)), body: body)
+    }
+    
     private func post<Body: Encodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws {
         try await request(URLRequest(.post, url: url(for: path, parameters: parameters)), body: body)
     }
@@ -263,12 +281,24 @@ public actor FinchClient: Client {
         try await request(URLRequest(.put, url: url(for: path, parameters: parameters)), body: body)
     }
     
+    private func put<Response: Decodable>(_ path: String, parameters: Parameters? = nil, body: MultipartFormData) async throws -> Response {
+        try await request(URLRequest(.put, url: url(for: path, parameters: parameters)), body: body)
+    }
+    
     private func delete<Body: Encodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws {
         try await request(URLRequest(.delete, url: url(for: path, parameters: parameters)), body: body)
     }
     
     private func delete(_ path: String, parameters: Parameters? = nil) async throws {
         try await request(URLRequest(.delete, url: url(for: path, parameters: parameters)))
+    }
+    
+    private func request<Response: Decodable>(_ request: URLRequest, body: MultipartFormData) async throws -> Response {
+        var request = request
+        request.setValue(body.httpContentTypeHeaderValue, forHTTPHeaderField: "Content-Type")
+        request.httpBody = body.httpBody
+        
+        return try await self.request(request)
     }
     
     func request<Body: Encodable, Response: Decodable>(_ request: URLRequest, body: Body, waitsForConnectivity: Bool = false) async throws -> Response {

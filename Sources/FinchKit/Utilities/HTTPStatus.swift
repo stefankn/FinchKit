@@ -41,7 +41,7 @@ public struct HTTPStatus: Equatable, Sendable {
     
     // MARK: - Construction
     
-    init(_ code: Int) {
+    public init(_ code: Int) {
         self.code = code
     }
 }

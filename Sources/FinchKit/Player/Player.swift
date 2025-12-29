@@ -9,7 +9,7 @@ import Combine
 import MediaPlayer
 import Factory
 import FinchProtocol
-#if os(iOS)
+#if os(iOS) || os(tvOS)
 import UIKit
 #else
 import AppKit
@@ -433,7 +433,7 @@ public final class Player {
             info[MPMediaItemPropertyAlbumTitle] = nil
         }
         
-        #if os(iOS)
+        #if os(iOS) || os(tvOS)
         if let imageData, let image = UIImage(data: imageData) {
             let artwork = MPMediaItemArtwork(boundsSize: image.size) { @Sendable _ in image }
             info[MPMediaItemPropertyArtwork] = artwork
