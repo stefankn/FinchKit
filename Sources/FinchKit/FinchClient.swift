@@ -186,7 +186,7 @@ public actor FinchClient: Client {
     public func artworkURL(for playlist: Playlist) -> URL? {
         guard playlist.isArtworkAvailable else { return nil }
         
-        return try? url(for: "/api/v1/playlists/\(playlist.id)/image")
+        return try? url(for: "/api/v1/playlists/\(playlist.id)/artwork")
     }
     
     public func streamURL(for item: Item) throws -> URL {
@@ -209,11 +209,15 @@ public actor FinchClient: Client {
         ))
     }
     
-    public func uploadImage(_ imageData: Data, for playlist: Playlist) async throws -> Playlist {
+    public func uploadArtwork(_ imageData: Data, for playlist: Playlist) async throws -> Playlist {
         var body = MultipartFormData()
         body.add(key: "image", fileName: "image.jpg", mimeType: "image/jpeg", fileData: imageData)
         
-        return try await put("/api/v1/playlists/\(playlist.id)/image", body: body)
+        return try await put("/api/v1/playlists/\(playlist.id)/artwork", body: body)
+    }
+    
+    public func removeArtwork(for playlist: Playlist) async throws -> Playlist {
+        try await delete("/api/v1/playlists/\(playlist.id)/artwork")
     }
     
     public func delete(_ playlist: Playlist) async throws {
@@ -287,6 +291,10 @@ public actor FinchClient: Client {
     
     private func delete<Body: Encodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws {
         try await request(URLRequest(.delete, url: url(for: path, parameters: parameters)), body: body)
+    }
+    
+    private func delete<Response: Decodable>(_ path: String, parameters: Parameters? = nil) async throws -> Response {
+        try await request(URLRequest(.delete, url: url(for: path, parameters: parameters)))
     }
     
     private func delete(_ path: String, parameters: Parameters? = nil) async throws {

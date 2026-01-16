@@ -60,4 +60,8 @@ public final class PlaylistManager {
         
         await eventCenter.broadcast(.added(entries), for: playlist)
     }
+    
+    public func update(_ playlist: Playlist) {
+        playlists = playlists.map { $0.id == playlist.id ? playlist : $0 }
+    }
 }

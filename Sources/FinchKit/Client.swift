@@ -33,7 +33,8 @@ public protocol Client: Actor {
     func getPlaylists() async throws -> [Playlist]
     func getPlaylist(for id: Int) async throws -> Playlist
     func createPlaylist(name: String, description: String?, items: [Item]?) async throws -> Playlist
-    func uploadImage(_ imageData: Data, for playlist: Playlist) async throws -> Playlist
+    func uploadArtwork(_ imageData: Data, for playlist: Playlist) async throws -> Playlist
+    func removeArtwork(for playlist: Playlist) async throws -> Playlist
     func artworkURL(for playlist: Playlist) -> URL?
     func delete(_ playlist: Playlist) async throws
     func add(_ items: [Item], to playlist: Playlist) async throws -> [PlaylistEntry]
