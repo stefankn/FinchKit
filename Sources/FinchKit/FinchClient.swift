@@ -64,6 +64,10 @@ public actor FinchClient: Client {
             throw error
         }
     }
+
+    public func disconnect() {
+        url = nil
+    }
     
     public func getAlbums(filter: AlbumFilter, sorting: Sorting, limit: Int) async throws -> Pager<Album, AlbumFilter> {
         if isOfflineModeEnabled {
@@ -217,7 +221,8 @@ public actor FinchClient: Client {
     }
     
     public func removeArtwork(for playlist: Playlist) async throws -> Playlist {
-        try await delete("/api/v1/playlists/\(playlist.id)/artwork")
+        try await delete("/api/v1/playlists/\(playlist.id)/artwork") as Void
+        return try await getPlaylist(for: playlist.id)
     }
     
     public func delete(_ playlist: Playlist) async throws {
@@ -230,7 +235,7 @@ public actor FinchClient: Client {
     }
     
     public func delete(_ entry: PlaylistEntry, from playlist: Playlist) async throws {
-        try await delete("/api/v1/playlists/\(playlist.id)/entries/\(entry.id)")
+        try await delete("/api/v1/playlists/\(playlist.id)/entries", body: RemovePlaylistEntries(entryIds: [entry.id]))
     }
     
     public func update(_ item: Item, artist: String, title: String) async throws -> Item {
@@ -333,8 +338,21 @@ public actor FinchClient: Client {
         let (data, _) = try await self.request(request, waitsForConnectivity: waitsForConnectivity)
         
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+
+            if let timestamp = try? container.decode(Double.self) {
+                return Date(timeIntervalSince1970: timestamp)
+            }
+
+            let string = try container.decode(String.self)
+            guard let date = try? Date(string, strategy: .iso8601) else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date: \(string)")
+            }
+
+            return date
+        }
+
         return try decoder.decode(Response.self, from: data)
     }
     

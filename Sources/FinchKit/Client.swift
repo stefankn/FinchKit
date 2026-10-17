@@ -17,6 +17,7 @@ public protocol Client: Actor {
     // MARK: - Functions
     
     func connect(to url: URL) async throws
+    func disconnect()
     func getAlbums(filter: AlbumFilter, sorting: Sorting, limit: Int) async throws -> Pager<Album, AlbumFilter>
     func getAlbum(for id: Int) async throws -> Album
     func getNextPage(_ pager: Pager<Album, AlbumFilter>) async throws -> Pager<Album, AlbumFilter>
