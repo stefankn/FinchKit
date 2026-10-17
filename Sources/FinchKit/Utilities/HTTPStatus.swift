@@ -18,6 +18,7 @@ public struct HTTPStatus: Equatable, Sendable {
     public static let notFound = HTTPStatus(404)
     public static let notAllowed = HTTPStatus(405)
     public static let preconditionFailed = HTTPStatus(412)
+    public static let contentTooLarge = HTTPStatus(413)
     
     
     

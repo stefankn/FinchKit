@@ -214,10 +214,13 @@ public actor FinchClient: Client {
     }
     
     public func uploadArtwork(_ imageData: Data, for playlist: Playlist) async throws -> Playlist {
-        var body = MultipartFormData()
-        body.add(key: "image", fileName: "image.jpg", mimeType: "image/jpeg", fileData: imageData)
-        
-        return try await put("/api/v1/playlists/\(playlist.id)/artwork", body: body)
+        let artwork = try ArtworkImage(imageData)
+
+        var request = try URLRequest(.put, url: url(for: "/api/v1/playlists/\(playlist.id)/artwork"))
+        request.setValue(artwork.mimeType, forHTTPHeaderField: "Content-Type")
+        request.httpBody = artwork.data
+
+        return try await self.request(request)
     }
     
     public func removeArtwork(for playlist: Playlist) async throws -> Playlist {
@@ -274,10 +277,6 @@ public actor FinchClient: Client {
         try await request(URLRequest(.post, url: url(for: path, parameters: parameters)), body: body)
     }
     
-    private func post<Response: Decodable>(_ path: String, parameters: Parameters? = nil, body: MultipartFormData) async throws -> Response {
-        try await request(URLRequest(.post, url: url(for: path, parameters: parameters)), body: body)
-    }
-    
     private func post<Body: Encodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws {
         try await request(URLRequest(.post, url: url(for: path, parameters: parameters)), body: body)
     }
@@ -287,10 +286,6 @@ public actor FinchClient: Client {
     }
     
     private func put<Body: Encodable, Response: Decodable>(_ path: String, parameters: Parameters? = nil, body: Body) async throws -> Response {
-        try await request(URLRequest(.put, url: url(for: path, parameters: parameters)), body: body)
-    }
-    
-    private func put<Response: Decodable>(_ path: String, parameters: Parameters? = nil, body: MultipartFormData) async throws -> Response {
         try await request(URLRequest(.put, url: url(for: path, parameters: parameters)), body: body)
     }
     
@@ -304,14 +299,6 @@ public actor FinchClient: Client {
     
     private func delete(_ path: String, parameters: Parameters? = nil) async throws {
         try await request(URLRequest(.delete, url: url(for: path, parameters: parameters)))
-    }
-    
-    private func request<Response: Decodable>(_ request: URLRequest, body: MultipartFormData) async throws -> Response {
-        var request = request
-        request.setValue(body.httpContentTypeHeaderValue, forHTTPHeaderField: "Content-Type")
-        request.httpBody = body.httpBody
-        
-        return try await self.request(request)
     }
     
     func request<Body: Encodable, Response: Decodable>(_ request: URLRequest, body: Body, waitsForConnectivity: Bool = false) async throws -> Response {
@@ -372,6 +359,8 @@ public actor FinchClient: Client {
                     throw APIError.badRequest(message)
                 case .notFound:
                     throw APIError.notFound
+                case .contentTooLarge:
+                    throw APIError.imageTooLarge
                 default:
                     throw APIError.failure(response.status, data)
                 }

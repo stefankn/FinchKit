@@ -10,6 +10,8 @@ import Foundation
 public enum APIError: LocalizedError {
     case badRequest(String?)
     case failure(HTTPStatus, Data?)
+    case imageTooLarge
+    case invalidImage
     case notFound
     
     
@@ -20,6 +22,10 @@ public enum APIError: LocalizedError {
         switch self {
         case .badRequest(let message):
             return message ?? "Invalid request"
+        case .imageTooLarge:
+            return "Image is too large"
+        case .invalidImage:
+            return "Invalid image"
         case .notFound:
             return "Not found"
         case .failure(_, _):
